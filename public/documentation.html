@@ -1,0 +1,1794 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Documentation Technique — Suivi Sender ID</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root {
+    --primary: #3B35E8;
+    --primary-dark: #2A26B8;
+    --ink: #0F172A;
+    --ink2: #334155;
+    --ink3: #64748B;
+    --border: #E2E8F0;
+    --surface: #F8FAFC;
+    --white: #FFFFFF;
+    --green: #16A34A;
+    --amber: #D97706;
+    --red: #DC2626;
+    --code-bg: #1E293B;
+    --code-text: #E2E8F0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--white);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  /* ── PRINT ── */
+  @media print {
+    .no-print { display: none !important; }
+    body { font-size: 12px; }
+    .page-break { page-break-before: always; }
+    a { color: inherit; text-decoration: none; }
+    .cover { page-break-after: always; }
+    pre { white-space: pre-wrap; word-break: break-word; }
+    section { page-break-inside: avoid; }
+  }
+
+  /* ── COVER ── */
+  .cover {
+    background: linear-gradient(135deg, #1a1560 0%, #3B35E8 50%, #0C447C 100%);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 80px 100px;
+  }
+  .cover-logo {
+    font-size: 13px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 48px;
+    font-weight: 600;
+  }
+  .cover h1 {
+    font-size: 52px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    letter-spacing: -1.5px;
+  }
+  .cover h1 span { color: #93C5FD; }
+  .cover-sub {
+    font-size: 18px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 64px;
+    max-width: 520px;
+    line-height: 1.5;
+  }
+  .cover-meta {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    gap: 40px;
+  }
+  .cover-meta-item label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .cover-meta-item span {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  /* ── LAYOUT ── */
+  .doc-body {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 64px 48px;
+  }
+
+  /* ── TOC ── */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px 36px;
+    margin-bottom: 56px;
+  }
+  .toc h2 {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink3);
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+  .toc ol {
+    list-style: none;
+    counter-reset: toc-counter;
+  }
+  .toc ol li {
+    counter-increment: toc-counter;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .toc ol li:last-child { border-bottom: none; }
+  .toc ol li::before {
+    content: counter(toc-counter, decimal-leading-zero);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--primary);
+    font-weight: 600;
+    flex-shrink: 0;
+    width: 24px;
+  }
+  .toc ol li a {
+    color: var(--ink2);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    flex: 1;
+  }
+  .toc ol li a:hover { color: var(--primary); }
+  .toc ol li .toc-page {
+    color: var(--ink3);
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── SECTIONS ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--border);
+  }
+  .section-num {
+    background: var(--primary);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 4px 10px;
+    border-radius: 6px;
+    letter-spacing: 1px;
+  }
+  h2.section-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--ink);
+    letter-spacing: -0.5px;
+  }
+  h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 28px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  h3::before {
+    content: '';
+    display: inline-block;
+    width: 3px;
+    height: 16px;
+    background: var(--primary);
+    border-radius: 2px;
+  }
+  p { color: var(--ink2); margin-bottom: 12px; }
+
+  /* ── CARDS ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin: 20px 0 32px;
+  }
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: box-shadow .2s;
+  }
+  .card-icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .card h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .card .version {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--primary);
+    font-weight: 600;
+    background: #EEF0FF;
+    padding: 2px 7px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 8px;
+  }
+  .card p { font-size: 12px; color: var(--ink3); margin: 0; line-height: 1.5; }
+
+  /* ── TABLES ── */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 16px 0 28px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    background: var(--primary);
+    color: #fff;
+    padding: 11px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.3px;
+  }
+  thead th:first-child { border-radius: 9px 0 0 0; }
+  thead th:last-child  { border-radius: 0 9px 0 0; }
+  tbody td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    color: var(--ink2);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) td { background: var(--surface); }
+  .method {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+  .method.GET    { background: #DCFCE7; color: #15803D; }
+  .method.POST   { background: #DBEAFE; color: #1D4ED8; }
+  .method.PUT    { background: #FEF3C7; color: #B45309; }
+  .method.DELETE { background: #FEE2E2; color: #B91C1C; }
+  .route {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.3px;
+  }
+  .badge.admin   { background: #FEE2E2; color: #B91C1C; }
+  .badge.write   { background: #FEF3C7; color: #92400E; }
+  .badge.auth    { background: #E0E7FF; color: #3730A3; }
+  .badge.public  { background: #DCFCE7; color: #166534; }
+
+  /* ── CODE ── */
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    border-radius: 10px;
+    padding: 20px 24px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    margin: 12px 0 24px;
+  }
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: #EEF0FF;
+    color: var(--primary-dark);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+    border-radius: 0;
+  }
+  .kw  { color: #C792EA; }
+  .str { color: #C3E88D; }
+  .cmt { color: #546E7A; font-style: italic; }
+  .fn  { color: #82AAFF; }
+  .num { color: #F78C6C; }
+
+  /* ── ENV BLOCKS ── */
+  .env-block {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 12px 0 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--code-text);
+  }
+  .env-key   { color: #82AAFF; }
+  .env-val   { color: #C3E88D; }
+  .env-group {
+    color: #546E7A;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 12px;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+
+  /* ── ROLE DIAGRAM ── */
+  .role-diagram {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 20px 0 28px;
+  }
+  .role-box {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .role-box-header {
+    padding: 12px 16px;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .role-box-header.admin-h  { background: #FEE2E2; color: #991B1B; }
+  .role-box-header.user-h   { background: #DBEAFE; color: #1E40AF; }
+  .role-box-header.viewer-h { background: #F0FDF4; color: #166534; }
+  .role-box ul {
+    list-style: none;
+    padding: 12px 16px;
+  }
+  .role-box ul li {
+    font-size: 12px;
+    color: var(--ink3);
+    padding: 3px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .role-box ul li::before {
+    content: '✓';
+    color: var(--green);
+    font-weight: 700;
+    font-size: 11px;
+  }
+  .role-box ul li.denied::before {
+    content: '✗';
+    color: var(--red);
+  }
+
+  /* ── ARCH DIAGRAM ── */
+  .arch {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin: 20px 0 28px;
+    background: var(--surface);
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+  .arch-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 8px 0;
+    flex-wrap: wrap;
+  }
+  .arch-box {
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    background: #fff;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: 600;
+    font-size: 12px;
+    min-width: 100px;
+  }
+  .arch-box.external {
+    border-color: var(--ink3);
+    color: var(--ink3);
+  }
+  .arch-arrow {
+    color: var(--ink3);
+    font-size: 18px;
+  }
+
+  /* ── ALERT ── */
+  .alert {
+    border-left: 4px solid;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 12px 0 20px;
+    font-size: 13px;
+  }
+  .alert.info    { border-color: #3B82F6; background: #EFF6FF; color: #1E40AF; }
+  .alert.warning { border-color: #F59E0B; background: #FFFBEB; color: #92400E; }
+  .alert.tip     { border-color: #10B981; background: #ECFDF5; color: #065F46; }
+
+  /* ── SPACER ── */
+  .spacer { height: 48px; }
+  section { margin-bottom: 64px; }
+
+  /* ── PRINT BTN ── */
+  .print-btn {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(59,53,232,0.4);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 9999;
+    font-family: 'Inter', sans-serif;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .print-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(59,53,232,0.45);
+  }
+
+  /* ── FOOTER ── */
+  .doc-footer {
+    text-align: center;
+    padding: 32px 48px;
+    border-top: 1px solid var(--border);
+    color: var(--ink3);
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ COVER ══════════════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-logo">LAfricaMobile · Documentation Technique</div>
+  <h1>Suivi Sender ID<br/><span>Afrique Ouest &amp; Centrale</span></h1>
+  <p class="cover-sub">Documentation complète de l'architecture, des technologies, des API et des configurations de la plateforme de suivi des Sender IDs.</p>
+  <div class="cover-meta">
+    <div class="cover-meta-item">
+      <label>Version</label>
+      <span>1.0.0</span>
+    </div>
+    <div class="cover-meta-item">
+      <label>Date</label>
+      <span>Mai 2026</span>
+    </div>
+    <div class="cover-meta-item">
+      <label>Environnement</label>
+      <span>Node.js 20 / Docker</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BODY ═══════════════════════════════════════════════════════════════════ -->
+<div class="doc-body">
+
+  <!-- TABLE DES MATIÈRES -->
+  <div class="toc">
+    <h2>Table des matières</h2>
+    <ol>
+      <li><a href="#overview">Vue d'ensemble du projet</a></li>
+      <li><a href="#architecture">Architecture technique</a></li>
+      <li><a href="#stack">Stack technologique & dépendances npm</a></li>
+      <li><a href="#auth">Authentification & sécurité (JWT + OTP)</a></li>
+      <li><a href="#roles">Rôles & permissions</a></li>
+      <li><a href="#api">Référence complète des API REST</a></li>
+      <li><a href="#database">Base de données MongoDB</a></li>
+      <li><a href="#cloudinary">Stockage fichiers — Cloudinary</a></li>
+      <li><a href="#email">Service email — Nodemailer + Gmail SMTP</a></li>
+      <li><a href="#zoho">Intégration Zoho Desk</a></li>
+      <li><a href="#frontend">Interface utilisateur (Frontend)</a></li>
+      <li><a href="#env">Variables d'environnement (.env)</a></li>
+      <li><a href="#docker">Conteneurisation — Docker</a></li>
+    </ol>
+  </div>
+
+
+  <!-- ─── 1. VUE D'ENSEMBLE ──────────────────────────────────────────────── -->
+  <section id="overview">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2 class="section-title">Vue d'ensemble du projet</h2>
+    </div>
+
+    <p><strong>Suivi Sender ID — Afrique Ouest &amp; Centrale</strong> est une application web interne développée pour LAfricaMobile. Elle permet aux équipes de suivre l'état des demandes de Sender ID auprès des opérateurs téléphoniques dans les pays d'Afrique subsaharienne où LAfricaMobile opère.</p>
+
+    <h3>Objectif métier</h3>
+    <p>Un Sender ID (identifiant d'expéditeur SMS) est le nom affiché dans la messagerie du destinataire lorsqu'il reçoit un SMS commercial. L'enregistrement d'un Sender ID nécessite une soumission administrative auprès de chaque opérateur dans chaque pays. Cette plateforme centralise et suit ces demandes en temps réel.</p>
+
+    <h3>Fonctionnalités principales</h3>
+    <div class="card-grid">
+      <div class="card">
+        <span class="card-icon">📊</span>
+        <h4>Tableau de bord</h4>
+        <p>KPIs temps réel : total des Sender IDs, approuvés, à notifier, en attente par opérateur.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">🌍</span>
+        <h4>Suivi par pays</h4>
+        <p>15+ pays couverts. Vue filtrée par pays avec accès direct à la vue Zoho Desk correspondante.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">📄</span>
+        <h4>Gestion documentaire</h4>
+        <p>Upload et stockage des documents clients sur Cloudinary. Catégories par type et nom client.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">📋</span>
+        <h4>Modèles</h4>
+        <p>Bibliothèque de templates de formulaires téléchargeables, versionnés par pays.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">🔔</span>
+        <h4>Notifications clients</h4>
+        <p>Marquage des Sender IDs approuvés comme "notifiés au client" avec horodatage.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">👥</span>
+        <h4>Gestion utilisateurs</h4>
+        <p>Invitation par email, 3 niveaux d'accès (admin / utilisateur / lecteur), 2FA OTP.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ─── 2. ARCHITECTURE ────────────────────────────────────────────────── -->
+  <section id="architecture">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2 class="section-title">Architecture technique</h2>
+    </div>
+
+    <p>L'application suit une architecture <strong>MPA (Multi-Page Application)</strong> avec un backend Node.js/Express exposant une API REST, et un frontend en HTML/CSS/JS vanilla servi statiquement.</p>
+
+    <div class="arch">
+      <div class="arch-row">
+        <div class="arch-box">Navigateur<br/><small>HTML / CSS / JS</small></div>
+      </div>
+      <div class="arch-row"><span class="arch-arrow">↕</span></div>
+      <div class="arch-row">
+        <div class="arch-box">Express.js<br/><small>server.js :3000</small></div>
+      </div>
+      <div class="arch-row"><span class="arch-arrow">↕ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ↕ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ↕</span></div>
+      <div class="arch-row">
+        <div class="arch-box external">MongoDB Atlas<br/><small>Cloud (MongoDB Inc.)</small></div>
+        <div class="arch-box external">Cloudinary<br/><small>Cloud (Cloudinary Ltd.)</small></div>
+        <div class="arch-box external">Gmail SMTP<br/><small>Google</small></div>
+      </div>
+    </div>
+
+    <h3>Flux de données</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Composant</th><th>Rôle</th><th>Hébergement</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>server.js</code></td>
+            <td>Point d'entrée unique — routing, middleware, business logic</td>
+            <td>Local / Docker / VPS</td>
+          </tr>
+          <tr>
+            <td><code>public/</code></td>
+            <td>Pages HTML statiques servies par Express</td>
+            <td>Même serveur</td>
+          </tr>
+          <tr>
+            <td>MongoDB Atlas</td>
+            <td>Stockage persistant de toutes les données applicatives</td>
+            <td>Cloud (M0 cluster free tier)</td>
+          </tr>
+          <tr>
+            <td>Cloudinary</td>
+            <td>Stockage et diffusion des fichiers uploadés</td>
+            <td>Cloud (CDN mondial)</td>
+          </tr>
+          <tr>
+            <td>Gmail SMTP</td>
+            <td>Envoi des emails OTP et invitations</td>
+            <td>Google servers</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Structure des fichiers</h3>
+    <pre><code>sender-id-v2/
+├── server.js          <span class="cmt"># Serveur Express — API REST complète</span>
+├── package.json       <span class="cmt"># Dépendances Node.js</span>
+├── Dockerfile         <span class="cmt"># Image Docker node:20-alpine</span>
+├── .env               <span class="cmt"># Variables d'environnement (non versionné)</span>
+└── public/
+    ├── index.html     <span class="cmt"># Application principale (dashboard, liste, docs)</span>
+    ├── login.html     <span class="cmt"># Page de connexion (email + OTP)</span>
+    ├── activate.html  <span class="cmt"># Page d'activation compte (lien invitation)</span>
+    ├── lamlogo.png    <span class="cmt"># Logo LAfricaMobile</span>
+    ├── login-bg.png   <span class="cmt"># Fond de la page de connexion</span>
+    └── documentation.html <span class="cmt"># Ce document</span></code></pre>
+  </section>
+
+
+  <!-- ─── 3. STACK ───────────────────────────────────────────────────────── -->
+  <section id="stack">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2 class="section-title">Stack technologique &amp; dépendances npm</h2>
+    </div>
+
+    <h3>Runtime & framework</h3>
+    <div class="card-grid">
+      <div class="card">
+        <span class="card-icon">🟢</span>
+        <h4>Node.js</h4>
+        <span class="version">v20 LTS (Alpine)</span>
+        <p>Environnement d'exécution JavaScript côté serveur. Version 20 LTS utilisée dans le Dockerfile pour sa stabilité et support long terme.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">⚡</span>
+        <h4>Express.js</h4>
+        <span class="version">^4.18.2</span>
+        <p>Framework HTTP minimaliste et performant pour Node.js. Gère le routing, les middlewares, et le service de fichiers statiques.</p>
+      </div>
+    </div>
+
+    <h3>Dépendances npm — description détaillée</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Package</th>
+            <th>Version</th>
+            <th>Rôle</th>
+            <th>Utilisation dans le projet</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>express</strong></td>
+            <td><code>^4.18.2</code></td>
+            <td>Framework web</td>
+            <td>Routing de toutes les routes <code>/api/*</code>, service des fichiers statiques (<code>public/</code>), middlewares JSON et CORS.</td>
+          </tr>
+          <tr>
+            <td><strong>mongodb</strong></td>
+            <td><code>^6.3.0</code></td>
+            <td>Driver MongoDB officiel</td>
+            <td>Connexion à MongoDB Atlas, opérations CRUD sur les collections <code>pays</code>, <code>operateurs</code>, <code>sender_ids</code>, <code>documents</code>, <code>modeles</code>, <code>users</code>, <code>otps</code>, <code>invitations</code>.</td>
+          </tr>
+          <tr>
+            <td><strong>dotenv</strong></td>
+            <td><code>^16.3.1</code></td>
+            <td>Variables d'environnement</td>
+            <td>Chargement du fichier <code>.env</code> au démarrage. Injecte toutes les clés secrètes (MongoDB URI, JWT secret, Cloudinary credentials, SMTP) dans <code>process.env</code>.</td>
+          </tr>
+          <tr>
+            <td><strong>cors</strong></td>
+            <td><code>^2.8.5</code></td>
+            <td>Middleware CORS</td>
+            <td>Autorise les requêtes cross-origin pour permettre au frontend de communiquer avec l'API en développement local.</td>
+          </tr>
+          <tr>
+            <td><strong>multer</strong></td>
+            <td><code>^1.4.5-lts.1</code></td>
+            <td>Upload de fichiers</td>
+            <td>Traitement multipart/form-data pour l'upload de documents et modèles. Configuré en mémoire (<code>memoryStorage</code>) avec limite de 20 Mo. Le buffer est ensuite transmis à Cloudinary.</td>
+          </tr>
+          <tr>
+            <td><strong>cloudinary</strong></td>
+            <td><code>^2.5.1</code></td>
+            <td>SDK cloud storage</td>
+            <td>Upload des fichiers (<code>upload_stream</code>), suppression (<code>destroy</code>) dans les dossiers <code>sender-id/documents</code> et <code>sender-id/modeles</code>. Fichiers stockés en <code>resource_type: 'raw'</code>.</td>
+          </tr>
+          <tr>
+            <td><strong>jsonwebtoken</strong></td>
+            <td><code>^9.0.2</code></td>
+            <td>JWT (tokens d'auth)</td>
+            <td>Génération du token JWT après vérification OTP (durée 8h). Vérification dans le middleware <code>authRequired</code> à chaque requête API protégée. Payload : <code>{ id, email, nom, role }</code>.</td>
+          </tr>
+          <tr>
+            <td><strong>bcryptjs</strong></td>
+            <td><code>^2.4.3</code></td>
+            <td>Hachage de mots de passe</td>
+            <td>Hash des mots de passe utilisateurs avec <code>bcrypt.hash(password, 10)</code>. Hash des OTP avec <code>bcrypt.hash(otp, 6)</code> (rounds réduits pour rapidité). Vérification avec <code>bcrypt.compare()</code>.</td>
+          </tr>
+          <tr>
+            <td><strong>nodemailer</strong></td>
+            <td><code>^6.9.9</code></td>
+            <td>Envoi d'emails</td>
+            <td>Transporter Gmail SMTP avec authentification App Password. Envoi des codes OTP (email HTML stylisé) et des liens d'invitation (token 48h).</td>
+          </tr>
+          <tr>
+            <td><strong>crypto</strong></td>
+            <td>Natif Node.js</td>
+            <td>Génération de tokens</td>
+            <td><code>crypto.randomBytes(32).toString('hex')</code> pour générer les tokens d'invitation uniques et sécurisés de 64 caractères hexadécimaux.</td>
+          </tr>
+          <tr>
+            <td><strong>stream</strong></td>
+            <td>Natif Node.js</td>
+            <td>Flux de données</td>
+            <td><code>Readable.from(buffer)</code> pour transformer le buffer Multer en stream lisible et le piper vers <code>cloudinary.uploader.upload_stream()</code>.</td>
+          </tr>
+          <tr>
+            <td><strong>path / fs</strong></td>
+            <td>Natif Node.js</td>
+            <td>Système de fichiers</td>
+            <td><code>path.join()</code> pour résoudre le chemin absolu de <code>public/index.html</code> dans le catch-all route. <code>fs</code> importé mais principalement remplacé par Cloudinary.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Technologies frontend (vanilla — aucun framework)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Technologie</th><th>Usage</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>HTML5</strong></td>
+            <td>Structure des pages <code>login.html</code>, <code>index.html</code>, <code>activate.html</code></td>
+          </tr>
+          <tr>
+            <td><strong>CSS3 Custom Properties</strong></td>
+            <td>Thème cohérent via variables CSS <code>:root</code> — couleurs, espacements</td>
+          </tr>
+          <tr>
+            <td><strong>JavaScript ES6+</strong></td>
+            <td>Fetch API pour les appels REST, gestion du DOM, LocalStorage pour le token JWT</td>
+          </tr>
+          <tr>
+            <td><strong>CSS Animations</strong></td>
+            <td>Toasts de notification (<code>@keyframes toast-in/toast-out</code>), transitions UI</td>
+          </tr>
+          <tr>
+            <td><strong>LocalStorage</strong></td>
+            <td>Stockage du token JWT côté navigateur — clé <code>token</code> et objet <code>user</code></td>
+          </tr>
+          <tr>
+            <td><strong>Backdrop-filter</strong></td>
+            <td>Effet de flou glassmorphism sur le formulaire de connexion</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+
+  <!-- ─── 4. AUTH ─────────────────────────────────────────────────────────── -->
+  <section id="auth">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2 class="section-title">Authentification &amp; sécurité (JWT + OTP)</h2>
+    </div>
+
+    <p>L'authentification repose sur un système à <strong>deux facteurs</strong> : vérification email/mot de passe puis validation d'un code OTP à 6 chiffres envoyé par email. Un JWT est émis uniquement après validation des deux étapes.</p>
+
+    <h3>Flux d'authentification</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Étape</th><th>Action utilisateur</th><th>Backend</th><th>Résultat</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>1</strong></td>
+            <td>Saisie email + mot de passe</td>
+            <td><code>POST /api/auth/login</code> — vérifie bcrypt hash</td>
+            <td>OTP généré, hashé, stocké en BDD avec TTL 10 min, envoyé par email</td>
+          </tr>
+          <tr>
+            <td><strong>2</strong></td>
+            <td>Saisie code OTP à 6 chiffres (auto-submit)</td>
+            <td><code>POST /api/auth/verify-otp</code> — compare bcrypt</td>
+            <td>JWT signé (8h), suppression de l'OTP</td>
+          </tr>
+          <tr>
+            <td><strong>3</strong></td>
+            <td>Toutes les requêtes suivantes</td>
+            <td>Middleware <code>authRequired</code> — vérifie header <code>Authorization: Bearer &lt;token&gt;</code></td>
+            <td>Accès accordé ou 401</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Flux d'invitation</h3>
+    <p>Les nouveaux utilisateurs sont invités par l'administrateur. Ils n'ont jamais de mot de passe temporaire — le lien d'invitation leur permet de définir directement leur propre mot de passe.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Étape</th><th>Endpoint</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Admin invite</td>
+            <td><code>POST /api/admin/invite</code></td>
+            <td>Crée compte inactif + token crypto 64 chars + email avec lien valable 48h</td>
+          </tr>
+          <tr>
+            <td>Utilisateur clique</td>
+            <td><code>GET /activate.html?token=...</code></td>
+            <td>Page d'activation — récupère email via <code>GET /api/auth/invitation/:token</code></td>
+          </tr>
+          <tr>
+            <td>Définition mot de passe</td>
+            <td><code>POST /api/auth/activate</code></td>
+            <td>Hash bcrypt du nouveau mot de passe, compte activé, token supprimé</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Sécurité des mots de passe et OTP</h3>
+    <pre><code><span class="cmt">// Mot de passe — bcrypt avec 10 rounds de salage</span>
+<span class="kw">const</span> hash = <span class="kw">await</span> bcrypt.<span class="fn">hash</span>(password, <span class="num">10</span>);
+<span class="kw">const</span> ok   = <span class="kw">await</span> bcrypt.<span class="fn">compare</span>(plaintext, hash);
+
+<span class="cmt">// OTP — 6 chiffres, hashé bcrypt rounds=6 (rapidité), TTL MongoDB 10 min</span>
+<span class="kw">const</span> otp = String(Math.<span class="fn">floor</span>(<span class="num">100000</span> + Math.<span class="fn">random</span>() * <span class="num">900000</span>));
+<span class="kw">await</span> db.<span class="fn">collection</span>(<span class="str">'otps'</span>).<span class="fn">insertOne</span>({
+  email: user.email,
+  otp: <span class="kw">await</span> bcrypt.<span class="fn">hash</span>(otp, <span class="num">6</span>),
+  expires_at: <span class="kw">new</span> <span class="fn">Date</span>(Date.<span class="fn">now</span>() + <span class="num">10</span> * <span class="num">60</span> * <span class="num">1000</span>)
+});
+
+<span class="cmt">// JWT — 8 heures, payload minimal</span>
+<span class="kw">const</span> token = jwt.<span class="fn">sign</span>(
+  { id, email, nom, role },
+  JWT_SECRET,
+  { expiresIn: <span class="str">'8h'</span> }
+);</code></pre>
+
+    <div class="alert warning">
+      <strong>Sécurité :</strong> L'OTP est hashé en base de données (pas stocké en clair). Même un accès direct à MongoDB ne révèle pas les codes en cours. L'expiration TTL est gérée nativement par MongoDB via index <code>expireAfterSeconds: 0</code>.
+    </div>
+
+    <h3>Middlewares d'autorisation</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Middleware</th><th>Condition d'accès</th><th>Réponse si refusé</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>authRequired</code></td>
+            <td>Token JWT valide dans le header <code>Authorization</code></td>
+            <td>401 Non authentifié</td>
+          </tr>
+          <tr>
+            <td><code>adminRequired</code></td>
+            <td>Token valide + <code>role === 'admin'</code></td>
+            <td>403 Accès admin requis</td>
+          </tr>
+          <tr>
+            <td><code>writeRequired</code></td>
+            <td>Token valide + <code>role !== 'viewer'</code></td>
+            <td>403 Accès en lecture seule</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+
+  <!-- ─── 5. RÔLES ────────────────────────────────────────────────────────── -->
+  <section id="roles">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2 class="section-title">Rôles &amp; permissions</h2>
+    </div>
+
+    <p>Trois rôles définissent les niveaux d'accès. Les restrictions sont appliquées à la fois côté <strong>backend</strong> (middlewares Express) et côté <strong>frontend</strong> (masquage des éléments UI).</p>
+
+    <div class="role-diagram">
+      <div class="role-box">
+        <div class="role-box-header admin-h">🔴 Admin</div>
+        <ul>
+          <li>Lire toutes les données</li>
+          <li>Créer / modifier Sender IDs</li>
+          <li>Supprimer Sender IDs</li>
+          <li>Upload documents</li>
+          <li>Upload modèles</li>
+          <li>Gérer les utilisateurs</li>
+          <li>Inviter nouveaux membres</li>
+          <li>Modifier rôles</li>
+          <li>Réinitialiser invitations</li>
+        </ul>
+      </div>
+      <div class="role-box">
+        <div class="role-box-header user-h">🔵 User</div>
+        <ul>
+          <li>Lire toutes les données</li>
+          <li>Créer / modifier Sender IDs</li>
+          <li>Supprimer Sender IDs</li>
+          <li>Upload documents</li>
+          <li>Upload modèles</li>
+          <li class="denied">Gérer les utilisateurs</li>
+          <li class="denied">Inviter nouveaux membres</li>
+          <li class="denied">Modifier rôles</li>
+          <li class="denied">Réinitialiser invitations</li>
+        </ul>
+      </div>
+      <div class="role-box">
+        <div class="role-box-header viewer-h">🟢 Viewer</div>
+        <ul>
+          <li>Lire toutes les données</li>
+          <li class="denied">Créer / modifier Sender IDs</li>
+          <li class="denied">Supprimer Sender IDs</li>
+          <li class="denied">Upload documents</li>
+          <li class="denied">Upload modèles</li>
+          <li class="denied">Gérer les utilisateurs</li>
+          <li class="denied">Inviter nouveaux membres</li>
+          <li class="denied">Modifier rôles</li>
+          <li class="denied">Réinitialiser invitations</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Implémentation double couche (Frontend + Backend)</h3>
+    <pre><code><span class="cmt">// Backend — middleware writeRequired bloque les viewers</span>
+<span class="kw">function</span> <span class="fn">writeRequired</span>(req, res, next) {
+  <span class="fn">authRequired</span>(req, res, () => {
+    <span class="kw">if</span> (req.user.role === <span class="str">'viewer'</span>)
+      <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">403</span>).<span class="fn">json</span>({ error: <span class="str">'Accès en lecture seule'</span> });
+    <span class="fn">next</span>();
+  });
+}
+
+<span class="cmt">// Frontend — masquage des éléments d'écriture pour les viewers</span>
+<span class="kw">if</span> (user.role === <span class="str">'viewer'</span>) {
+  window.__viewerMode = <span class="kw">true</span>;
+  document.<span class="fn">getElementById</span>(<span class="str">'tab-form'</span>).style.display = <span class="str">'none'</span>;
+  [<span class="str">'btn-add-doc'</span>, <span class="str">'btn-add-modele'</span>].<span class="fn">forEach</span>(id => {
+    <span class="kw">const</span> el = document.<span class="fn">getElementById</span>(id);
+    <span class="kw">if</span> (el) el.style.display = <span class="str">'none'</span>;
+  });
+}</code></pre>
+
+    <div class="alert tip">
+      La restriction backend est la barrière de sécurité réelle. La restriction frontend améliore l'expérience utilisateur en masquant les fonctions inutilisables, mais ne remplace pas le contrôle serveur.
+    </div>
+  </section>
+
+
+  <!-- ─── 6. API ───────────────────────────────────────────────────────────── -->
+  <section id="api">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2 class="section-title">Référence complète des API REST</h2>
+    </div>
+
+    <p>Toutes les routes sont préfixées par <code>/api</code>. Le serveur écoute sur le port <code>3000</code> par défaut.</p>
+
+    <h3>Authentification</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Méthode</th><th>Route</th><th>Auth</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="method POST">POST</span></td>
+            <td><span class="route">/api/auth/login</span></td>
+            <td><span class="badge public">PUBLIC</span></td>
+            <td>Email + mot de passe → génère et envoie OTP. Body: <code>{ email, password }</code></td>
+          </tr>
+          <tr>
+            <td><span class="method POST">POST</span></td>
+            <td><span class="route">/api/auth/verify-otp</span></td>
+            <td><span class="badge public">PUBLIC</span></td>
+            <td>Vérifie OTP → retourne JWT 8h. Body: <code>{ email, otp }</code></td>
+          </tr>
+          <tr>
+            <td><span class="method GET">GET</span></td>
+            <td><span class="route">/api/auth/me</span></td>
+            <td><span class="badge auth">AUTH</span></td>
+            <td>Infos de l'utilisateur connecté depuis le JWT</td>
+          </tr>
+          <tr>
+            <td><span class="method PUT">PUT</span></td>
+            <td><span class="route">/api/auth/password</span></td>
+            <td><span class="badge auth">AUTH</span></td>
+            <td>Changer son mot de passe. Body: <code>{ current, nouveau }</code></td>
+          </tr>
+          <tr>
+            <td><span class="method GET">GET</span></td>
+            <td><span class="route">/api/auth/invitation/:token</span></td>
+            <td><span class="badge public">PUBLIC</span></td>
+            <td>Vérifie un token d'invitation, retourne <code>{ email, nom }</code></td>
+          </tr>
+          <tr>
+            <td><span class="method POST">POST</span></td>
+            <td><span class="route">/api/auth/activate</span></td>
+            <td><span class="badge public">PUBLIC</span></td>
+            <td>Active un compte avec token + nouveau mot de passe. Body: <code>{ token, password }</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Administration utilisateurs</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Méthode</th><th>Route</th><th>Auth</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="method GET">GET</span></td>
+            <td><span class="route">/api/admin/users</span></td>
+            <td><span class="badge admin">ADMIN</span></td>
+            <td>Liste tous les utilisateurs (sans champ password)</td>
+          </tr>
+          <tr>
+            <td><span class="method POST">POST</span></td>
+            <td><span class="route">/api/admin/invite</span></td>
+            <td><span class="badge admin">ADMIN</span></td>
+            <td>Invite un nouvel utilisateur. Body: <code>{ email, nom, role }</code></td>
+          </tr>
+          <tr>
+            <td><span class="method POST">POST</span></td>
+            <td><span class="route">/api/admin/invite/:id/resend</span></td>
+            <td><span class="badge admin">ADMIN</span></td>
+            <td>Renvoie l'email d'invitation (nouveau token 48h)</td>
+          </tr>
+          <tr>
+            <td><span class="method PUT">PUT</span></td>
+            <td><span class="route">/api/admin/users/:id</span></td>
+            <td><span class="badge admin">ADMIN</span></td>
+            <td>Modifie nom / rôle / statut actif. Body: <code>{ nom?, role?, actif? }</code></td>
+          </tr>
+          <tr>
+            <td><span class="method DELETE">DELETE</span></td>
+            <td><span class="route">/api/admin/users/:id</span></td>
+            <td><span class="badge admin">ADMIN</span></td>
+            <td>Supprime un utilisateur (impossible de se supprimer soi-même)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Pays &amp; opérateurs</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Méthode</th><th>Route</th><th>Auth</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="method GET">GET</span></td>
+            <td><span class="route">/api/pays</span></td>
+            <td><span class="badge auth">AUTH</span></td>
+            <td>Liste tous les pays (nom, code, indicatif, prérequis)</td>
+          </tr>
+          <tr>
+            <td><span class="method PUT">PUT</span></td>
+            <td><span class="route">/api/pays/:id/prereqs</span></td>
+            <td><span class="badge write">WRITE</span></td>
+            <td>Met à jour les prérequis documentaires d'un pays</td>
+          </tr>
+          <tr>
+            <td><span class="method GET">GET</span></td>
+            <td><span class="route">/api/operateurs</span></td>
+            <td><span class="badge auth">AUTH</span></td>
+            <td>Liste opérateurs. Query: <code>?pays_id=...</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Sender IDs</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Méthode</th><th>Route</th><th>Auth</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="method GET">GET</span></td>
+            <td><span class="route">/api/sender-ids</span></td>
+            <td><span class="badge auth">AUTH</span></td>
+            <td>Liste avec filtres. Query: <code>?search=&amp;statut=&amp;pays_id=</code></td>
+          </tr>
+          <tr>
+            <td><span class="method POST">POST</span></td>
+            <td><span class="route">/api/sender-ids</span></td>
+            <td><span class="badge write">WRITE</span></td>
+            <td>Crée un Sender ID. Body: <code>{ nom_client, sender_id, pays_id, operateurs[], ... }</code></td>
+          </tr>
+          <tr>
+            <td><span class="method PUT">PUT</span></td>
+            <td><span class="route">/api/sender-ids/:id</span></td>
+            <td><span class="badge write">WRITE</span></td>
+            <td>Met à jour un Sender ID (données générales + opérateurs)</td>
+          </tr>
+          <tr>
+            <td><span class="method PUT">PUT</span></td>
+            <td><span class="route">/api/sender-ids/:id/operateur-statut</span></td>
+            <td><span class="badge write">WRITE</span></td>
+            <td>Met à jour le statut d'un opérateur spécifique. Body: <code>{ operateur_id, statut, date_approbation? }</code></td>
+          </tr>
+          <tr>
+            <td><span class="method PUT">PUT</span></td>
+            <td><span class="route">/api/sender-ids/:id/notifier</span></td>
+            <td><span class="badge write">WRITE</span></td>
+            <td>Marque le Sender ID comme "client notifié"</td>
+          </tr>
+          <tr>
+            <td><span class="method DELETE">DELETE</span></td>
+            <td><span class="route">/api/sender-ids/:id</span></td>
+            <td><span class="badge write">WRITE</span></td>
+            <td>Supprime un Sender ID</td>
+          </tr>
+          <tr>
+            <td><span class="method GET">GET</span></td>
+            <td><span class="route">/api/stats</span></td>
+            <td><span class="badge auth">AUTH</span></td>
+            <td>KPIs agrégés : total, approuvés, à notifier, notifiés, en attente</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Documents &amp; Modèles</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Méthode</th><th>Route</th><th>Auth</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="method GET">GET</span></td>
+            <td><span class="route">/api/documents</span></td>
+            <td><span class="badge auth">AUTH</span></td>
+            <td>Liste documents. Query: <code>?nom_client=&amp;type=</code></td>
+          </tr>
+          <tr>
+            <td><span class="method POST">POST</span></td>
+            <td><span class="route">/api/documents</span></td>
+            <td><span class="badge write">WRITE</span></td>
+            <td>Upload <code>multipart/form-data</code>. Champs: <code>file</code>, <code>type</code>, <code>nom_client</code>, <code>commentaire</code>, <code>nom_original</code></td>
+          </tr>
+          <tr>
+            <td><span class="method DELETE">DELETE</span></td>
+            <td><span class="route">/api/documents/:id</span></td>
+            <td><span class="badge write">WRITE</span></td>
+            <td>Supprime en BDD + supprime sur Cloudinary (<code>resource_type: raw</code>)</td>
+          </tr>
+          <tr>
+            <td><span class="method GET">GET</span></td>
+            <td><span class="route">/api/modeles</span></td>
+            <td><span class="badge auth">AUTH</span></td>
+            <td>Liste tous les modèles</td>
+          </tr>
+          <tr>
+            <td><span class="method POST">POST</span></td>
+            <td><span class="route">/api/modeles</span></td>
+            <td><span class="badge write">WRITE</span></td>
+            <td>Upload modèle. Champs: <code>file</code>, <code>nom</code>, <code>description</code>, <code>version</code>, <code>pays</code></td>
+          </tr>
+          <tr>
+            <td><span class="method DELETE">DELETE</span></td>
+            <td><span class="route">/api/modeles/:id</span></td>
+            <td><span class="badge write">WRITE</span></td>
+            <td>Supprime modèle en BDD + Cloudinary</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert info">
+      <strong>Niveaux d'autorisation :</strong> PUBLIC = sans token · AUTH = token JWT valide · WRITE = token valide + rôle admin ou user (pas viewer) · ADMIN = token valide + rôle admin uniquement.
+    </div>
+  </section>
+
+
+  <!-- ─── 7. DATABASE ─────────────────────────────────────────────────────── -->
+  <section id="database">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <h2 class="section-title">Base de données MongoDB</h2>
+    </div>
+
+    <p>La base de données est hébergée sur <strong>MongoDB Atlas</strong> (cluster M0 gratuit). Le driver officiel <code>mongodb</code> v6 est utilisé en connexion directe (sans Mongoose).</p>
+
+    <h3>Collections et schémas</h3>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Collection</th><th>Description</th><th>Index</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>users</code></td>
+            <td>Comptes utilisateurs avec email, hash mot de passe, nom, rôle, statut actif</td>
+            <td><code>email</code> (unique)</td>
+          </tr>
+          <tr>
+            <td><code>otps</code></td>
+            <td>Codes OTP temporaires hashés. Auto-suppression via TTL index MongoDB</td>
+            <td><code>expires_at</code> (TTL expireAfterSeconds: 0)</td>
+          </tr>
+          <tr>
+            <td><code>invitations</code></td>
+            <td>Tokens d'invitation en attente (48h). Supprimés à l'activation</td>
+            <td><code>expires_at</code> (TTL), <code>token</code> (unique)</td>
+          </tr>
+          <tr>
+            <td><code>pays</code></td>
+            <td>Référentiel des pays avec code ISO, indicatif téléphonique, prérequis documentaires</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><code>operateurs</code></td>
+            <td>Opérateurs téléphoniques avec MCC, MNC, référence au pays parent</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><code>sender_ids</code></td>
+            <td>Demandes de Sender ID. Document principal avec tableau embarqué d'opérateurs et statuts</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><code>documents</code></td>
+            <td>Métadonnées des fichiers uploadés (URL Cloudinary, type, client, commentaire)</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><code>modeles</code></td>
+            <td>Modèles de formulaires (URL Cloudinary, version, pays concerné)</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Schéma sender_ids</h3>
+    <pre><code>{
+  _id: ObjectId,
+  nom_client:       <span class="str">"Nom du client"</span>,
+  sender_id:        <span class="str">"MYSENDERID"</span>,
+  pays_id:          ObjectId,       <span class="cmt">// ref → pays</span>
+  numero_ticket:    <span class="str">"TKT-001"</span>,
+  url_ticket:       <span class="str">"https://..."</span>,
+  commentaires:     <span class="str">"..."</span>,
+  date_demande:     Date,
+  date_soumission:  Date,
+  notifie:          Boolean,        <span class="cmt">// client notifié ?</span>
+  date_notification: Date | null,
+  operateurs: [
+    {
+      operateur_id:     ObjectId,   <span class="cmt">// ref → operateurs</span>
+      nom:              <span class="str">"Orange"</span>,
+      statut:           <span class="str">"Approuvé"</span>,  <span class="cmt">// voir valeurs ci-dessous</span>
+      date_approbation: Date | null
+    }
+  ],
+  created_at: Date,
+  updated_at: Date
+}</code></pre>
+
+    <h3>Valeurs de statut opérateur</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Statut</th><th>Catégorie</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>Approuvé</td><td>✅ Approuvé</td><td>Sender ID activé sur réseau</td></tr>
+          <tr><td>Approuvé Offnet</td><td>✅ Approuvé</td><td>Activé pour le trafic off-net uniquement</td></tr>
+          <tr><td>Approuvé Partiel</td><td>✅ Approuvé</td><td>Activation partielle en cours</td></tr>
+          <tr><td>Collecte interne</td><td>⏳ En attente</td><td>Documents en cours de collecte</td></tr>
+          <tr><td>En cours de traitement</td><td>⏳ En attente</td><td>Soumis, traitement chez l'opérateur</td></tr>
+          <tr><td>En attente d'info</td><td>⏳ En attente</td><td>Informations complémentaires requises</td></tr>
+          <tr><td>Rejeté</td><td>❌ Rejeté</td><td>Demande refusée</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+
+  <!-- ─── 8. CLOUDINARY ───────────────────────────────────────────────────── -->
+  <section id="cloudinary">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <h2 class="section-title">Stockage fichiers — Cloudinary</h2>
+    </div>
+
+    <p>Cloudinary est utilisé comme CDN et service de stockage pour tous les fichiers uploadés par les utilisateurs. Le SDK officiel Node.js v2 est intégré.</p>
+
+    <h3>Configuration</h3>
+    <pre><code>cloudinary.<span class="fn">config</span>({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure:     <span class="kw">true</span>   <span class="cmt">// URLs HTTPS uniquement</span>
+});</code></pre>
+
+    <h3>Structure des dossiers Cloudinary</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Dossier</th><th>Contenu</th><th>resource_type</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>sender-id/documents</code></td>
+            <td>Documents clients (PDF, Word, images, etc.)</td>
+            <td><code>raw</code></td>
+          </tr>
+          <tr>
+            <td><code>sender-id/modeles</code></td>
+            <td>Templates de formulaires à télécharger</td>
+            <td><code>raw</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert info">
+      Le type <code>raw</code> est utilisé pour tous les fichiers car Cloudinary traite les images différemment (transformations automatiques). En <code>raw</code>, le fichier est stocké tel quel et l'URL directe permet le téléchargement sans modification.
+    </div>
+
+    <h3>Flux d'upload</h3>
+    <pre><code><span class="cmt">// Buffer Multer → Stream → Cloudinary</span>
+<span class="kw">function</span> <span class="fn">uploadToCloudinary</span>(buffer, options) {
+  <span class="kw">return new</span> <span class="fn">Promise</span>((resolve, reject) => {
+    <span class="kw">const</span> stream = cloudinary.uploader.<span class="fn">upload_stream</span>(options, (err, result) => {
+      <span class="kw">if</span> (err) <span class="fn">reject</span>(err); <span class="kw">else</span> <span class="fn">resolve</span>(result);
+    });
+    Readable.<span class="fn">from</span>(buffer).<span class="fn">pipe</span>(stream);
+  });
+}</code></pre>
+
+    <p>La réponse Cloudinary contient <code>result.public_id</code> (identifiant pour suppression) et <code>result.secure_url</code> (URL HTTPS pour téléchargement), stockés en base de données.</p>
+  </section>
+
+
+  <!-- ─── 9. EMAIL ─────────────────────────────────────────────────────────── -->
+  <section id="email">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <h2 class="section-title">Service email — Nodemailer + Gmail SMTP</h2>
+    </div>
+
+    <p>Nodemailer est configuré avec Gmail SMTP en utilisant un <strong>App Password</strong> Google (mot de passe d'application). Ce mécanisme permet l'envoi d'emails sans activer "accès moins sécurisé" sur le compte Google.</p>
+
+    <h3>Configuration du transporter</h3>
+    <pre><code><span class="kw">const</span> transporter = nodemailer.<span class="fn">createTransport</span>({
+  service: <span class="str">'gmail'</span>,
+  auth: {
+    user: process.env.SMTP_USER,  <span class="cmt">// akgc1107@gmail.com</span>
+    pass: process.env.SMTP_PASS   <span class="cmt">// App Password Google 16 caractères</span>
+  }
+});</code></pre>
+
+    <h3>Emails envoyés</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Email</th><th>Déclencheur</th><th>Contenu</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>OTP de connexion</strong></td>
+            <td><code>POST /api/auth/login</code> (credentials valides)</td>
+            <td>Code à 6 chiffres, design HTML avec fond bleu LAfricaMobile, valide 10 minutes</td>
+          </tr>
+          <tr>
+            <td><strong>Invitation</strong></td>
+            <td><code>POST /api/admin/invite</code></td>
+            <td>Lien d'activation personnalisé avec token 64 chars, valide 48 heures. Bouton CTA bleu</td>
+          </tr>
+          <tr>
+            <td><strong>Re-invitation</strong></td>
+            <td><code>POST /api/admin/invite/:id/resend</code></td>
+            <td>Même template invitation, nouveau token</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Mode dégradé (SMTP non configuré)</h3>
+    <p>Si <code>SMTP_USER</code> n'est pas défini dans <code>.env</code>, les emails sont simulés — le contenu est affiché dans les logs serveur au lieu d'être envoyé. Utile pour le développement sans accès SMTP.</p>
+
+    <div class="alert warning">
+      <strong>Gmail App Password :</strong> Nécessite l'activation de la vérification en 2 étapes sur le compte Google. Généré dans Compte Google → Sécurité → Mots de passe d'application. Le mot de passe généré est à 16 caractères et doit être stocké dans <code>SMTP_PASS</code>.
+    </div>
+  </section>
+
+
+  <!-- ─── 10. ZOHO ─────────────────────────────────────────────────────────── -->
+  <section id="zoho">
+    <div class="section-header">
+      <span class="section-num">10</span>
+      <h2 class="section-title">Intégration Zoho Desk</h2>
+    </div>
+
+    <p>L'application s'intègre avec Zoho Desk pour permettre un accès rapide aux vues CRM par pays. Des boutons dans la liste des pays redirigent directement vers les vues Zoho correspondantes.</p>
+
+    <h3>Configuration de l'organisation</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Paramètre</th><th>Valeur</th></tr></thead>
+        <tbody>
+          <tr><td>Organisation ID</td><td><code>849540058</code></td></tr>
+          <tr><td>Domaine</td><td><code>lafricamobilecom</code></td></tr>
+          <tr><td>Département</td><td><code>lafricamobile</code></td></tr>
+          <tr><td>Pattern URL</td><td><code>https://desk.zoho.com/agent/lafricamobilecom/lafricamobile/accounts/list/vue-{slug}</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Vues disponibles par pays</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Pays</th><th>Clé normalisée</th><th>Slug Zoho</th></tr></thead>
+        <tbody>
+          <tr><td>Sénégal</td><td><code>senegal</code></td><td><code>vue-senegal</code></td></tr>
+          <tr><td>Nigeria</td><td><code>nigeria</code></td><td><code>vue-nigeria</code></td></tr>
+          <tr><td>Bénin</td><td><code>benin</code></td><td><code>vue-benin</code></td></tr>
+          <tr><td>Côte d'Ivoire</td><td><code>cote divoire</code></td><td><code>vue-cote-divoire</code></td></tr>
+          <tr><td>Congo</td><td><code>congo</code></td><td><code>vue-congo</code></td></tr>
+          <tr><td>Gabon</td><td><code>gabon</code></td><td><code>vue-gabon</code></td></tr>
+          <tr><td>Mali</td><td><code>mali</code></td><td><code>vue-mali</code></td></tr>
+          <tr><td>Niger</td><td><code>niger</code></td><td><code>vue-niger</code></td></tr>
+          <tr><td>RDC</td><td><code>rdc</code></td><td><code>vue-rdc</code></td></tr>
+          <tr><td>Togo</td><td><code>togo</code></td><td><code>vue-togo</code></td></tr>
+          <tr><td>Cameroun</td><td><code>cameroun</code></td><td><code>vue-cameroun</code></td></tr>
+          <tr><td>Guinée</td><td><code>guinee</code></td><td><code>vue-guinee</code></td></tr>
+          <tr><td>Burkina Faso</td><td><code>burkina faso</code></td><td><code>vue-burkina-faso</code></td></tr>
+          <tr><td>Tchad</td><td><code>tchad</code></td><td><code>vue-tchad</code></td></tr>
+          <tr><td>Centrafrique</td><td><code>centrafrique</code></td><td><code>vue-centrafrique</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Normalisation des noms de pays</h3>
+    <p>Les noms de pays stockés en base peuvent contenir des accents, apostrophes ou espaces variables. La fonction <code>normalizePays()</code> garantit une correspondance robuste.</p>
+    <pre><code><span class="kw">function</span> <span class="fn">normalizePays</span>(nom) {
+  <span class="kw">return</span> (nom || <span class="str">''</span>)
+    .<span class="fn">toLowerCase</span>()
+    .<span class="fn">normalize</span>(<span class="str">'NFD'</span>)              <span class="cmt">// décompose les caractères accentués</span>
+    .<span class="fn">replace</span>(/[̀-ͯ]/g, <span class="str">''</span>) <span class="cmt">// supprime les diacritiques</span>
+    .<span class="fn">replace</span>(/['']/g, <span class="str">' '</span>)          <span class="cmt">// normalise les apostrophes</span>
+    .<span class="fn">replace</span>(/\s+/g, <span class="str">' '</span>)           <span class="cmt">// normalise les espaces multiples</span>
+    .<span class="fn">trim</span>();
+  <span class="cmt">// Exemples : "Sénégal" → "senegal", "Côte d'Ivoire" → "cote divoire"</span>
+}</code></pre>
+
+    <h3>MCP Zoho Desk (Claude Code)</h3>
+    <p>Le connecteur MCP Zoho Desk est disponible dans l'environnement Claude Code pour requêter directement les tickets, contacts et vues Zoho sans passer par l'interface web. Utilisé lors du développement pour découvrir les slugs de vues par pays.</p>
+  </section>
+
+
+  <!-- ─── 11. FRONTEND ────────────────────────────────────────────────────── -->
+  <section id="frontend">
+    <div class="section-header">
+      <span class="section-num">11</span>
+      <h2 class="section-title">Interface utilisateur (Frontend)</h2>
+    </div>
+
+    <h3>Palette de couleurs</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Variable CSS</th><th>Valeur</th><th>Usage</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>--primary</code></td>
+            <td style="background:#3B35E8;color:#fff;padding:2px 8px;border-radius:4px;">#3B35E8</td>
+            <td>Header topbar actif, boutons CTA, th tables, badges actifs</td>
+          </tr>
+          <tr>
+            <td><code>--primary-dark</code></td>
+            <td style="background:#2A26B8;color:#fff;padding:2px 8px;border-radius:4px;">#2A26B8</td>
+            <td>Hover sur éléments primary</td>
+          </tr>
+          <tr>
+            <td><code>--primary-light</code></td>
+            <td style="background:#EEF0FF;color:#3B35E8;padding:2px 8px;border-radius:4px;">#EEF0FF</td>
+            <td>Fond badges code, hover léger</td>
+          </tr>
+          <tr>
+            <td><code>--bg</code></td>
+            <td style="background:#F8FAFC;color:#0F172A;padding:2px 8px;border-radius:4px;">#F8FAFC</td>
+            <td>Fond de la zone de contenu principale</td>
+          </tr>
+          <tr>
+            <td><code>--surface</code></td>
+            <td style="background:#FFFFFF;color:#0F172A;padding:2px 8px;border-radius:4px;">#FFFFFF</td>
+            <td>Cards, panneaux, topbar</td>
+          </tr>
+          <tr>
+            <td><code>--text</code></td>
+            <td style="background:#0F172A;color:#fff;padding:2px 8px;border-radius:4px;">#0F172A</td>
+            <td>Texte principal</td>
+          </tr>
+          <tr>
+            <td><code>--text2</code></td>
+            <td style="background:#475569;color:#fff;padding:2px 8px;border-radius:4px;">#475569</td>
+            <td>Texte secondaire, labels formulaires</td>
+          </tr>
+          <tr>
+            <td><code>--green4</code></td>
+            <td style="background:#16A34A;color:#fff;padding:2px 8px;border-radius:4px;">#16A34A</td>
+            <td>Statuts approuvés, toasts succès</td>
+          </tr>
+          <tr>
+            <td><code>--red4</code></td>
+            <td style="background:#DC2626;color:#fff;padding:2px 8px;border-radius:4px;">#DC2626</td>
+            <td>Statuts rejetés, toasts erreur</td>
+          </tr>
+          <tr>
+            <td><code>--amber4</code></td>
+            <td style="background:#D97706;color:#fff;padding:2px 8px;border-radius:4px;">#D97706</td>
+            <td>Statuts en attente</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Système de toasts (notifications 3 secondes)</h3>
+    <p>Toutes les opérations de modification affichent une notification toast en haut à droite, avec animation d'entrée et sortie, disparaissant après 3 secondes.</p>
+    <pre><code><span class="kw">function</span> <span class="fn">showToast</span>(msg, type = <span class="str">'success'</span>) {
+  <span class="kw">const</span> c = document.<span class="fn">getElementById</span>(<span class="str">'toast-container'</span>);
+  <span class="kw">const</span> t = document.<span class="fn">createElement</span>(<span class="str">'div'</span>);
+  t.className = <span class="str">`toast ${type}`</span>;
+  c.<span class="fn">appendChild</span>(t);
+  <span class="fn">setTimeout</span>(() => {
+    t.classList.<span class="fn">add</span>(<span class="str">'toast-out'</span>);
+    t.<span class="fn">addEventListener</span>(<span class="str">'animationend'</span>, () => t.<span class="fn">remove</span>());
+  }, <span class="num">3000</span>);
+}</code></pre>
+
+    <h3>Pages HTML</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Page</th><th>Route</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>login.html</code></td>
+            <td><code>/login.html</code></td>
+            <td>Connexion 2 étapes. Step 1 : email + mot de passe. Step 2 : OTP 6 chiffres (auto-submit). Fond <code>login-bg.png</code>, formulaire glassmorphism, logo LAfricaMobile au-dessus du formulaire.</td>
+          </tr>
+          <tr>
+            <td><code>index.html</code></td>
+            <td><code>/</code></td>
+            <td>Application principale. Topbar sticky blanche avec onglets (Dashboard, Liste, Docs, Modèles, Admin). Chaque onglet est une section différente gérée en JS.</td>
+          </tr>
+          <tr>
+            <td><code>activate.html</code></td>
+            <td><code>/activate.html</code></td>
+            <td>Page d'activation de compte via lien d'invitation. Récupère le token depuis l'URL, affiche email pré-rempli, permet de définir le mot de passe.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Topbar & navigation</h3>
+    <pre><code><span class="cmt">/* Barre de navigation blanche avec ombre */</span>
+.topbar {
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+<span class="cmt">/* Onglet inactif */</span>
+.tab { background: #F1F5F9; color: var(--text2); border-radius: 6px; }
+<span class="cmt">/* Onglet actif — couleur primaire */</span>
+.tab.active { background: var(--primary); color: #fff; font-weight: 600; }</code></pre>
+
+    <h3>Responsive design</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Breakpoint</th><th>Adaptation</th></tr></thead>
+        <tbody>
+          <tr><td><code>@media (max-width: 900px)</code></td><td>Grille KPI passe en 2 colonnes, sidebar réduite</td></tr>
+          <tr><td><code>@media (max-width: 640px)</code></td><td>Navigation en scroll horizontal, tables adaptées</td></tr>
+          <tr><td><code>@media (max-width: 480px)</code></td><td>Formulaires pleine largeur, boutons empilés</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+
+  <!-- ─── 12. ENV ──────────────────────────────────────────────────────────── -->
+  <section id="env">
+    <div class="section-header">
+      <span class="section-num">12</span>
+      <h2 class="section-title">Variables d'environnement (.env)</h2>
+    </div>
+
+    <p>Toute la configuration sensible est externalisée dans un fichier <code>.env</code> à la racine du projet. Ce fichier ne doit jamais être versionné.</p>
+
+    <div class="env-block">
+      <div class="env-group"># ─── Application</div>
+      <div><span class="env-key">PORT</span>=<span class="env-val">3000</span></div>
+      <div><span class="env-key">APP_URL</span>=<span class="env-val">http://localhost:3000</span></div>
+      <div><span class="env-key">JWT_SECRET</span>=<span class="env-val">votre-secret-jwt-très-long-et-aléatoire</span></div>
+      <br/>
+      <div class="env-group"># ─── MongoDB Atlas</div>
+      <div><span class="env-key">MONGODB_URI</span>=<span class="env-val">mongodb+srv://user:pass@cluster.mongodb.net/</span></div>
+      <div><span class="env-key">DB_NAME</span>=<span class="env-val">sender_id_db</span></div>
+      <br/>
+      <div class="env-group"># ─── Cloudinary</div>
+      <div><span class="env-key">CLOUDINARY_CLOUD_NAME</span>=<span class="env-val">votre-cloud-name</span></div>
+      <div><span class="env-key">CLOUDINARY_API_KEY</span>=<span class="env-val">123456789012345</span></div>
+      <div><span class="env-key">CLOUDINARY_API_SECRET</span>=<span class="env-val">votre-api-secret-cloudinary</span></div>
+      <br/>
+      <div class="env-group"># ─── Email (Gmail SMTP)</div>
+      <div><span class="env-key">SMTP_USER</span>=<span class="env-val">akgc1107@gmail.com</span></div>
+      <div><span class="env-key">SMTP_PASS</span>=<span class="env-val">xxxx xxxx xxxx xxxx</span>  <span style="color:#546E7A"># App Password Google 16 chars</span></div>
+    </div>
+
+    <h3>Description des variables</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Variable</th><th>Obligatoire</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>PORT</code></td><td>Non</td><td>Port d'écoute du serveur. Défaut: 3000</td></tr>
+          <tr><td><code>APP_URL</code></td><td>Non</td><td>URL base de l'application — utilisée dans les liens d'invitation email. Défaut: http://localhost:3000</td></tr>
+          <tr><td><code>JWT_SECRET</code></td><td>Oui</td><td>Clé secrète pour signer les tokens JWT. Doit être longue et aléatoire en production</td></tr>
+          <tr><td><code>MONGODB_URI</code></td><td>Oui</td><td>URI de connexion MongoDB Atlas. Format mongodb+srv://</td></tr>
+          <tr><td><code>DB_NAME</code></td><td>Non</td><td>Nom de la base de données. Défaut: sender_id_db</td></tr>
+          <tr><td><code>CLOUDINARY_CLOUD_NAME</code></td><td>Oui</td><td>Identifiant de compte Cloudinary</td></tr>
+          <tr><td><code>CLOUDINARY_API_KEY</code></td><td>Oui</td><td>Clé API Cloudinary</td></tr>
+          <tr><td><code>CLOUDINARY_API_SECRET</code></td><td>Oui</td><td>Secret API Cloudinary</td></tr>
+          <tr><td><code>SMTP_USER</code></td><td>Non</td><td>Email Gmail expéditeur. Sans cette variable, emails simulés dans les logs</td></tr>
+          <tr><td><code>SMTP_PASS</code></td><td>Non</td><td>App Password Google à 16 caractères</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert warning">
+      <strong>Production :</strong> En production, <code>JWT_SECRET</code> doit être un token cryptographiquement aléatoire d'au moins 32 caractères. En Docker, les variables peuvent être passées via <code>--env-file .env</code> ou variables d'environnement du système hôte.
+    </div>
+  </section>
+
+
+  <!-- ─── 13. DOCKER ──────────────────────────────────────────────────────── -->
+  <section id="docker">
+    <div class="section-header">
+      <span class="section-num">13</span>
+      <h2 class="section-title">Conteneurisation — Docker</h2>
+    </div>
+
+    <p>L'application est packagée en image Docker pour faciliter le déploiement sur n'importe quelle infrastructure. L'image est basée sur <code>node:20-alpine</code> pour une taille minimale.</p>
+
+    <h3>Dockerfile</h3>
+    <pre><code><span class="kw">FROM</span> node:<span class="num">20</span>-alpine     <span class="cmt"># Image de base légère (~50MB)</span>
+<span class="kw">WORKDIR</span> /app
+<span class="kw">COPY</span> package.json .
+<span class="kw">RUN</span> npm install        <span class="cmt"># Installe les dépendances dans le layer dédié</span>
+<span class="kw">COPY</span> . .               <span class="cmt"># Copie le code source</span>
+<span class="kw">EXPOSE</span> <span class="num">3000</span>
+<span class="kw">CMD</span> [<span class="str">"node"</span>, <span class="str">"server.js"</span>]</code></pre>
+
+    <h3>Workflow de build et déploiement</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Étape</th><th>Commande</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Build</td>
+            <td><code>docker build -t sender-id-app .</code></td>
+            <td>Construit l'image avec le tag <code>sender-id-app:latest</code></td>
+          </tr>
+          <tr>
+            <td>Tag versionné</td>
+            <td><code>docker tag sender-id-app sender-id-app:v1.0.0</code></td>
+            <td>Ajoute un tag de version sémantique</td>
+          </tr>
+          <tr>
+            <td>Export</td>
+            <td><code>docker save -o sender-id-app.tar sender-id-app:v1.0.0</code></td>
+            <td>Exporte l'image en fichier <code>.tar</code> pour transfert</td>
+          </tr>
+          <tr>
+            <td>Import</td>
+            <td><code>docker load -i sender-id-app.tar</code></td>
+            <td>Importe l'image sur le serveur cible</td>
+          </tr>
+          <tr>
+            <td>Run</td>
+            <td><code>docker run -d -p 3000:3000 --env-file .env sender-id-app:v1.0.0</code></td>
+            <td>Lance le conteneur en arrière-plan avec les variables d'environnement</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Run avec toutes les options recommandées</h3>
+    <pre><code>docker run -d \
+  --name sender-id \
+  -p 3000:3000 \
+  --env-file .env \
+  --restart unless-stopped \
+  sender-id-app:v1.0.0</code></pre>
+
+    <h3>Considérations de production</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Aspect</th><th>Recommandation</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Reverse proxy</td>
+            <td>Nginx ou Traefik devant le conteneur pour HTTPS (Let's Encrypt), gzip, headers de sécurité</td>
+          </tr>
+          <tr>
+            <td>Health check</td>
+            <td>Ajouter <code>HEALTHCHECK CMD wget -qO- http://localhost:3000/api/auth/me || exit 1</code> au Dockerfile</td>
+          </tr>
+          <tr>
+            <td>Logs</td>
+            <td><code>docker logs -f sender-id</code> — en production, rediriger vers un système centralisé (Loki, CloudWatch)</td>
+          </tr>
+          <tr>
+            <td>APP_URL</td>
+            <td>Définir <code>APP_URL=https://votre-domaine.com</code> pour que les liens d'invitation email soient corrects</td>
+          </tr>
+          <tr>
+            <td>MongoDB whitelist</td>
+            <td>L'IP du serveur Docker doit être whitelistée dans MongoDB Atlas Network Access</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert tip">
+      <strong>Commande rapide :</strong> <code>docker ps</code> liste les conteneurs actifs. <code>docker exec -it sender-id sh</code> ouvre un shell dans le conteneur en cours d'exécution.
+    </div>
+  </section>
+
+</div>
+
+<!-- ══ FOOTER ═════════════════════════════════════════════════════════════════ -->
+<div class="doc-footer no-print">
+  <p>Documentation générée pour <strong>Suivi Sender ID v1.0.0</strong> · LAfricaMobile · Mai 2026</p>
+  <p style="margin-top:4px">Cliquez sur le bouton ci-dessous pour exporter en PDF</p>
+</div>
+
+<!-- ══ PRINT BUTTON ═══════════════════════════════════════════════════════════ -->
+<button class="print-btn no-print" onclick="window.print()">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+    <rect x="6" y="14" width="12" height="8"/>
+  </svg>
+  Exporter en PDF
+</button>
+
+</body>
+</html>

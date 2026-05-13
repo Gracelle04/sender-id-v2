@@ -1,0 +1,2312 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Suivi Sender ID — Afrique Ouest & Centrale</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  /* Brand — header & primary CTAs only */
+  --primary:#3B35E8;--primary-dark:#2A26B8;--primary-light:#EEF0FF;
+
+  /* Interactive — links, focus, badges (calmer blue) */
+  --blue:#1D4ED8;--blue4:#3B82F6;--blueb:#93C5FD;--blue50:#EFF6FF;
+
+  /* Backgrounds & surfaces */
+  --bg:#F8FAFC;--surface:#FFFFFF;
+
+  /* Borders — neutral gray, no blue tint */
+  --border:#E2E8F0;--border2:#CBD5E1;
+
+  /* Text — slate scale */
+  --text:#0F172A;--text2:#475569;--text3:#94A3B8;
+
+  /* Status — unchanged */
+  --green50:#F0FDF4;--green:#14532D;--green6:#166534;--greena:#86EFAC;--green4:#16A34A;
+  --amber50:#FFFBEB;--amber:#78350F;--amber4:#D97706;
+  --red50:#FEF2F2;--red:#7F1D1D;--red4:#DC2626;
+  --purple50:#F5F3FF;--purple:#4C1D95;--purple4:#7C3AED;
+  --teal50:#F0FDFA;--teal:#134E4A;--tealb:#2DD4BF;
+  --gray50:#F8FAFC;--gray:#334155;
+
+  /* Shadows — neutral */
+  --shadow-sm:0 1px 3px rgba(0,0,0,.06);--shadow-md:0 2px 8px rgba(0,0,0,.08);--shadow-lg:0 4px 16px rgba(0,0,0,.10);
+  --r:8px;--rl:12px;
+  --font:'DM Sans',sans-serif;--mono:'IBM Plex Mono',monospace;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── HEADER ── */
+.app{width:100%;display:flex;flex-direction:column;min-height:100vh}
+.topbar{
+  background:#fff;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 1.5rem;gap:8px;flex-wrap:nowrap;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+  position:sticky;top:0;z-index:100;
+}
+.topbar-brand{display:flex;align-items:center;gap:10px;flex-shrink:0;padding:10px 0}
+.topbar-brand img{height:32px;width:32px;border-radius:50%;flex-shrink:0}
+.topbar h2{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap}
+.tabs{display:flex;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none;gap:4px;padding:8px 0;flex:1;justify-content:center}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:#F1F5F9;color:var(--text2);font-family:var(--font);position:relative;transition:all .15s;white-space:nowrap;flex-shrink:0;border-radius:6px}
+.tab:hover{background:#E2E8F0;color:var(--text)}
+.tab.active{background:var(--primary);color:#fff;font-weight:600}
+.tab-dot{position:absolute;top:4px;right:4px;width:5px;height:5px;border-radius:50%;background:var(--red4)}
+
+/* ── CONTENT ── */
+.content{padding:1.25rem 1.5rem;flex:1}
+.page{display:none}.page.active{display:block}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:1.25rem;margin-bottom:.875rem;box-shadow:var(--shadow-sm)}
+.clabel{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;font-weight:600;color:var(--text)}
+.field input,.field select,.field textarea{width:100%;padding:7px 10px;font-size:13px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font);outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus{border-color:var(--blue4)}
+.field textarea{resize:none;height:62px}
+.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.field input:disabled,.field select:disabled{background:var(--bg);color:var(--text3)}
+
+.country-info{display:flex;align-items:center;gap:8px;padding:7px 11px;border:1.5px solid var(--blueb);border-radius:var(--r);background:var(--blue50);margin-top:6px}
+.ccode{font-size:10px;font-weight:600;padding:2px 6px;background:#B5D4F4;color:var(--blue);border-radius:3px;font-family:var(--mono)}
+.ctext{font-size:11px;color:var(--blue)}
+.divider{height:1px;background:var(--border);margin:12px 0}
+.ops-lbl{font-size:11px;color:var(--text3);margin-bottom:8px}
+
+.op-row{display:grid;grid-template-columns:1fr 1fr 160px;gap:10px;align-items:center;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--r);background:var(--bg);margin-bottom:6px;transition:all .2s}
+.op-row.ok{border-color:var(--greena);background:var(--green50)}
+.op-row.offnet{border-color:#1D9E75;background:#E1F5EE}
+.op-row.partial{border-color:#5DCAA5;background:#E1F5EE55}
+.op-row.info{border-color:#EF9F27;background:#FAEEDA55}
+.op-row.suspended{border-color:#BA7517;background:#FAEEDA}
+.op-row.proc{border-color:var(--blueb);background:var(--blue50)}
+.op-row.sub{border-color:var(--purple4);background:var(--purple50)}
+.op-row.rej{border-color:var(--red4);background:var(--red50)}
+.op-name{font-size:12px;font-weight:500}
+.op-meta{font-size:10px;color:var(--text3);margin-top:2px;font-family:var(--mono)}
+.op-desc{font-size:11px;color:var(--text2)}
+.op-sel{width:100%;padding:5px 8px;font-size:11px;border:1.5px solid var(--border2);border-radius:6px;background:var(--surface);color:var(--text);font-family:var(--font);appearance:none;cursor:pointer}
+.empty-ops{padding:20px;text-align:center;color:var(--text3);font-size:13px;border:1.5px dashed var(--border2);border-radius:var(--r)}
+
+.ok-banner{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--green50);border:1.5px solid var(--greena);border-radius:var(--r);margin-top:10px}
+.ok-icon{width:28px;height:28px;border-radius:50%;background:var(--green4);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ok-icon svg{width:13px;height:13px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.ok-title{font-size:12px;font-weight:500;color:var(--green);margin-bottom:2px}
+.ok-sub{font-size:11px;color:var(--green6)}
+.ok-btn{padding:6px 12px;font-size:11px;font-weight:500;border-radius:var(--r);border:none;background:var(--green4);color:#fff;cursor:pointer;font-family:var(--font);flex-shrink:0}
+
+.btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:.875rem}
+.btn{padding:8px 18px;font-size:13px;font-weight:500;border-radius:var(--r);border:1.5px solid var(--border2);cursor:pointer;font-family:var(--font);transition:all .15s}
+.btn-ghost{background:transparent;color:var(--text2)}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-primary:hover{background:var(--primary-dark);border-color:var(--primary-dark)}
+.btn-primary:disabled{background:var(--text3);border-color:var(--text3);cursor:not-allowed}
+
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;border:1.5px solid transparent}
+.inline-sel{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;cursor:pointer;border:1.5px solid transparent;outline:none;transition:all .2s}
+.inline-sel.b-collect,.b-collect{background:var(--gray50);color:var(--gray);border-color:#D1D5DB}
+.inline-sel.b-proc,.b-proc{background:var(--blue50);color:var(--blue);border-color:var(--blueb)}
+.inline-sel.b-info,.b-info{background:var(--amber50);color:var(--amber);border-color:#FCD34D}
+.inline-sel.b-ok,.b-ok{background:var(--green50);color:var(--green);border-color:var(--greena)}
+.inline-sel.b-offnet,.b-offnet{background:var(--teal50);color:var(--teal);border-color:var(--tealb)}
+.inline-sel.b-partial,.b-partial{background:#F0FDFA;color:#134E4A;border-color:#99F6E4}
+.inline-sel.b-rej,.b-rej{background:var(--red50);color:var(--red);border-color:#FCA5A5}
+.inline-sel.b-suspended,.b-suspended{background:var(--amber50);color:#92400E;border-color:#FCD34D}
+.b-wait{background:var(--amber50);color:var(--amber)}
+.b-collect{background:#F1EFE8;color:#5F5E5A}
+.b-proc{background:var(--blue50);color:var(--blue)}
+.b-info{background:#FAEEDA;color:#854F0B;border:1px solid #FAC775}
+.b-ok{background:var(--green50);color:var(--green)}
+.b-offnet{background:#E1F5EE;color:#085041}
+.b-partial{background:#9FE1CB44;color:#0F6E56}
+.b-rej{background:var(--red50);color:var(--red)}
+.b-suspended{background:#FAEEDA;color:#633806;border:1px solid #EF9F27}
+.b-blue{background:#EFF6FF;color:#1E40AF;border:1.5px solid #93C5FD}
+.b-green{background:var(--green50);color:var(--green);border:1.5px solid var(--greena)}
+.b-purple{background:var(--purple50);color:var(--purple);border:1.5px solid var(--purple4)}
+.b-gray{background:var(--gray50);color:var(--gray);border:1.5px solid #D1D5DB}
+
+.notify-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;background:var(--green50);color:var(--green);border:1.5px solid var(--greena);white-space:nowrap;cursor:pointer;transition:all .15s;box-shadow:var(--shadow-sm)}
+.notify-pill:hover{background:var(--green4);color:#fff;border-color:var(--green4);box-shadow:0 2px 4px rgba(5,150,105,.25)}
+.notified-pill{background:var(--blue50);color:var(--blue);border-color:var(--blueb);cursor:default;box-shadow:none}
+.notified-pill:hover{background:var(--blue50);color:var(--blue);border-color:var(--blueb);box-shadow:none}
+
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1rem}
+.stat-card{background:var(--surface);border-radius:var(--rl);padding:16px 18px;border:1.5px solid var(--border);box-shadow:var(--shadow-md);position:relative;overflow:hidden;transition:box-shadow .2s}
+.stat-card:hover{box-shadow:var(--shadow-lg)}
+.stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--primary);opacity:.15;border-radius:0 0 var(--rl) var(--rl)}
+.stat-label{font-size:11px;font-weight:600;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em}
+.stat-num{font-size:28px;font-weight:700;line-height:1;letter-spacing:-.02em}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:5px;font-weight:500}
+
+.chart-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.chart-label{width:140px;color:var(--text2);text-align:right;flex-shrink:0;font-size:12px}
+.chart-bar-bg{flex:1;height:18px;background:var(--bg);border-radius:4px;overflow:hidden;border:1.5px solid var(--border)}
+.chart-bar{height:100%;border-radius:4px;transition:width .5s}
+.chart-val{width:28px;text-align:right;color:var(--text2);flex-shrink:0;font-size:12px}
+
+.list-controls{display:flex;gap:10px;margin-bottom:1rem;flex-wrap:wrap}
+.list-controls input{flex:1;min-width:160px;padding:9px 12px;font-size:13px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font);outline:none;box-shadow:var(--shadow-sm);transition:all .15s}
+.list-controls input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,86,219,.1)}
+.list-controls select{min-width:140px}
+.list-controls select{padding:9px 28px 9px 12px;font-size:13px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font);appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%231A56DB' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;box-shadow:var(--shadow-sm);font-weight:500}
+
+.alert-card{background:var(--green50);border:1.5px solid var(--greena);border-radius:var(--rl);padding:1.25rem;margin-bottom:1rem;box-shadow:var(--shadow-md)}
+.alert-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.alert-icon{width:32px;height:32px;border-radius:50%;background:var(--green4);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 4px rgba(5,150,105,.3)}
+.alert-icon svg{width:15px;height:15px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.alert-title{font-size:14px;font-weight:700;color:var(--green)}
+.alert-sub{font-size:12px;color:var(--green6);margin-top:2px;font-weight:500}
+.alert-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,.8);border-radius:var(--r);margin-bottom:6px;border:1px solid rgba(110,231,183,.4);box-shadow:var(--shadow-sm)}
+.alert-item:last-child{margin-bottom:0}
+.ai-client{font-size:13px;font-weight:600;color:var(--green)}
+.ai-detail{font-size:11px;color:var(--green6);margin-top:2px;font-weight:500}
+.ai-btn{padding:6px 14px;font-size:11px;font-weight:700;border:none;border-radius:var(--r);background:var(--green4);color:#fff;cursor:pointer;font-family:var(--font);box-shadow:0 2px 4px rgba(5,150,105,.25);transition:all .15s}
+.ai-btn:hover{background:var(--green6)}
+.ai-btn.done{background:var(--green);box-shadow:none}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 12px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.07em;border-bottom:none;background:var(--primary)}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#F1F5F9}
+.td-m{color:var(--text2)}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+.prog-wrap{display:flex;align-items:center;gap:8px}
+.prog-bg{width:80px;height:6px;background:var(--bg);border-radius:10px;overflow:hidden;flex-shrink:0;border:1.5px solid var(--border)}
+.prog-fill{height:100%;border-radius:10px;transition:width .3s ease}
+.prog-lbl{font-size:11px;color:var(--text3);font-weight:600;font-family:var(--mono)}
+
+.loading{text-align:center;padding:32px;color:var(--text3);font-size:13px}
+.error-msg{padding:12px 16px;background:var(--red50);border:1px solid var(--red4);border-radius:var(--r);color:var(--red);font-size:13px;margin-bottom:12px}
+
+/* ── USER BAR ── */
+#user-bar{display:none;align-items:center;gap:8px;margin-left:auto}
+#user-bar .user-name{font-size:12px;color:var(--text2);font-weight:500}
+/* ── ADMIN TABLE ── */
+#admin-users-list table{width:100%}
+#admin-users-list th,#admin-users-list td{padding:9px 12px}
+
+/* ── TOAST ── */
+#toast-container{position:fixed;top:72px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;font-size:13px;font-weight:500;min-width:240px;max-width:340px;box-shadow:0 4px 20px rgba(0,0,0,.12);animation:toast-in .2s ease;pointer-events:auto}
+.toast.success{background:#fff;border-left:4px solid var(--green4);color:var(--text)}
+.toast.error{background:#fff;border-left:4px solid var(--red4);color:var(--text)}
+.toast-icon{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.toast.success .toast-icon{background:var(--green4)}
+.toast.error .toast-icon{background:var(--red4)}
+.toast-icon svg{width:11px;height:11px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.toast-out{animation:toast-out .25s ease forwards}
+@keyframes toast-in{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes toast-out{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(20px)}}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .content{padding:1rem}
+  .g3{grid-template-columns:1fr 1fr}
+  .stat-grid{grid-template-columns:1fr 1fr}
+}
+
+@media (max-width: 640px) {
+  .content{padding:.75rem .625rem}
+  .topbar{padding:0 .75rem;gap:4px}
+  .topbar h2{font-size:12px}
+  #user-bar .user-name{display:none}
+  .g2,.g3{grid-template-columns:1fr}
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .list-controls{flex-direction:column}
+  .list-controls input,.list-controls select{width:100%;min-width:unset}
+  .card{padding:.875rem}
+  .btn-row{flex-wrap:wrap}
+  .op-row{grid-template-columns:1fr 1fr;gap:6px}
+  table{font-size:12px}
+  th,td{padding:8px}
+  .td-m{display:none}
+}
+
+@media (max-width: 480px) {
+  .stat-grid{grid-template-columns:1fr}
+  .topbar-brand h2{display:none}
+  #user-bar .btn-ghost span{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-brand">
+      <img src="/lamlogo.png" alt="LAM"/>
+      <h2>Suivi Sender ID — Afrique Ouest &amp; Centrale</h2>
+    </div>
+    <div class="tabs">
+      <button class="tab" id="tab-form" onclick="showPage('form',this)">+ Nouveau</button>
+      <button class="tab active" id="tab-list" onclick="showPage('list',this)">Liste</button>
+      <button class="tab" id="tab-dash" onclick="showPage('dash',this)">Dashboard</button>
+      <button class="tab" id="tab-biblio" onclick="showPage('biblio',this)">Bibliothèque</button>
+      <button class="tab" id="tab-pays" onclick="showPage('pays',this)">Pays & opérateurs</button>
+      <button class="tab" id="tab-lookup" onclick="showPage('lookup',this)">Lookup</button>
+      <button class="tab" id="tab-admin" onclick="showPage('admin',this)" style="display:none">Utilisateurs</button>
+    </div>
+    <div id="user-bar" style="display:flex;align-items:center;gap:8px;flex-shrink:0;padding:8px 0">
+      <span class="user-name" id="user-name-display" style="color:var(--text2);font-size:12px;font-weight:500"></span>
+      <span class="badge b-blue" id="user-role-badge" style="font-size:10px"></span>
+      <button class="btn btn-ghost" onclick="logout()" style="font-size:11px;padding:5px 12px">Déconnexion</button>
+    </div>
+  </div>
+  <div class="content">
+
+  <!-- FORMULAIRE -->
+  <div class="page" id="page-form">
+    <div id="form-error"></div>
+
+    <!-- Infos client + pays (une seule fois) -->
+    <div class="card">
+      <div class="clabel">Informations client</div>
+      <div class="g2">
+        <div class="field"><label>Nom du client *</label><input type="text" id="f-client" placeholder="Ex: Wave Mobile Money" list="clients-datalist" autocomplete="off"/><datalist id="clients-datalist"></datalist></div>
+        <div class="field"><label>N° Ticket</label><input type="text" id="f-ticket" placeholder="TKT-XXXX"/></div>
+      </div>
+      <div class="g3">
+        <div class="field"><label>Date de demande</label><input type="date" id="f-ddem"/></div>
+        <div class="field"><label>Date de soumission</label><input type="date" id="f-dsub"/></div>
+        <div class="field"><label>URL Ticket</label><input type="text" id="f-url" placeholder="https://..."/></div>
+      </div>
+      <div class="field" style="margin-bottom:10px">
+        <label>Pays *</label>
+        <select id="f-pays" onchange="onFormPaysChange(this.value)">
+          <option value="">— Choisir un pays —</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Commentaires</label>
+        <textarea id="f-comm" placeholder="Remarques, conditions particulières..."></textarea>
+      </div>
+    </div>
+
+    <!-- Opérateurs communs (chargés selon le pays) -->
+    <div class="card" id="ops-card" style="display:none">
+      <div class="clabel">Opérateurs — statuts par Sender ID</div>
+      <div id="ops-card-body"></div>
+    </div>
+
+    <!-- Blocs Sender IDs -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="clabel" style="margin-bottom:0">Sender IDs à déclarer</div>
+        <button onclick="addSenderBlock()" style="padding:6px 14px;font-size:12px;font-weight:600;border:1.5px solid var(--blue4);border-radius:var(--r);background:var(--blue50);color:var(--blue);cursor:pointer;font-family:var(--font)">+ Ajouter un Sender ID</button>
+      </div>
+      <div id="sids-container"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="showPage('list',document.getElementById('tab-list'))">Annuler</button>
+      <button class="btn btn-primary" id="btn-save" onclick="saveEntry()">Enregistrer</button>
+    </div>
+  </div>
+
+  <!-- LISTE -->
+  <div class="page active" id="page-list">
+    <div id="notify-zone"></div>
+    <div class="list-controls">
+      <input type="text" id="search-inp" placeholder="Rechercher client, Sender ID..." oninput="filterList()"/>
+      <select id="f-statut" onchange="filterList()">
+        <option value="">Tous les statuts</option>
+        <option value="Collecte interne">Collecte interne</option>
+        <option value="En cours de traitement">En cours de traitement</option>
+        <option value="En attente d'info">En attente d'info</option>
+        <option value="Approuvé">Approuvé</option>
+        <option value="Approuvé Offnet">Approuvé Offnet</option>
+        <option value="Approuvé Partiel">Approuvé Partiel</option>
+        <option value="Rejeté">Rejeté</option>
+        <option value="Suspendu">Suspendu</option>
+      </select>
+      <select id="f-pays-list" onchange="filterList()">
+        <option value="">Tous les pays</option>
+      </select>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:.875rem">
+      <button onclick="exportCSV()" style="padding:7px 14px;font-size:12px;font-weight:500;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text2);cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7 1v8M4 6l3 3 3-3M2 10v2a1 1 0 001 1h8a1 1 0 001-1v-2"/></svg>
+        Export CSV
+      </button>
+      <button onclick="exportExcel()" style="padding:7px 14px;font-size:12px;font-weight:500;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text2);cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="1" width="12" height="12" rx="2"/><path d="M4 4l6 6M10 4l-6 6"/></svg>
+        Export Excel
+      </button>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div id="list-loading" class="loading">Chargement...</div>
+      <div class="table-wrap">
+        <table id="list-table" style="display:none">
+          <thead><tr>
+            <th>Client</th><th>Sender IDs déclarés</th><th>Pays</th>
+            <th>Progression opérateurs</th><th>Statut</th><th>Date</th><th>Notification</th><th></th>
+          </tr></thead>
+          <tbody id="list-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="list-empty" style="display:none;text-align:center;padding:32px;color:var(--text3);font-size:13px">Aucun résultat</div>
+    <div id="list-pagination" style="display:none;text-align:center;padding:16px 0 4px">
+      <button onclick="loadMoreList()" style="padding:9px 28px;font-size:13px;font-weight:600;border:1.5px solid var(--border2);border-radius:8px;background:var(--surface);color:var(--text2);cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:8px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg>
+        <span id="list-pagination-label">Charger 10 suivants</span>
+      </button>
+      <div id="list-pagination-count" style="margin-top:8px;font-size:11px;color:var(--text3)"></div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="page" id="page-dash">
+    <div id="dash-notify-zone"></div>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Sender IDs total</div>
+        <div class="stat-num" id="d-total">—</div>
+        <div class="stat-sub">entrées enregistrées</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Fully approuvés</div>
+        <div class="stat-num" style="color:var(--green)" id="d-ok">—</div>
+        <div class="stat-sub">tous opérateurs validés</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">À notifier</div>
+        <div class="stat-num" style="color:var(--green4)" id="d-notify">—</div>
+        <div class="stat-sub">clients en attente d'info</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Notifiés</div>
+        <div class="stat-num" style="color:var(--blue4)" id="d-notified">—</div>
+        <div class="stat-sub">clients informés</div>
+      </div>
+    </div>
+
+    <div class="stat-grid" style="margin-bottom:.875rem">
+      <div class="stat-card">
+        <div class="stat-label">En cours</div>
+        <div class="stat-num" style="color:var(--blue)" id="d-inprogress">—</div>
+        <div class="stat-sub">validation partielle</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Rejetés</div>
+        <div class="stat-num" style="color:var(--red)" id="d-rejected">—</div>
+        <div class="stat-sub">au moins un opérateur</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total opérateurs</div>
+        <div class="stat-num" style="color:var(--text2)" id="d-total-ops">—</div>
+        <div class="stat-sub">entrées opérateurs</div>
+      </div>
+    </div>
+
+    <div class="g2">
+      <div class="card">
+        <div class="clabel">Statuts opérateurs</div>
+        <div id="bar-statut"><div class="loading">Chargement...</div></div>
+      </div>
+      <div class="card">
+        <div class="clabel">Répartition par pays</div>
+        <div id="bar-pays"><div class="loading">Chargement...</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="clabel">Sender IDs récents</div>
+      <table>
+        <thead><tr>
+          <th>Client</th><th>Sender ID</th><th>Pays</th>
+          <th>Progression</th><th>Statut</th><th>Notification</th>
+        </tr></thead>
+        <tbody id="dash-recent"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- BIBLIOTHÈQUE -->
+  <div class="page" id="page-biblio">
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:1rem">
+      <input type="text" id="biblio-search" placeholder="Rechercher un client ou document..." oninput="filterBiblio()" style="flex:1;padding:9px 12px;font-size:13px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font);outline:none"/>
+      <select id="biblio-type" onchange="filterBiblio()" style="padding:9px 12px;font-size:13px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font)">
+        <option value="">Tous les types</option>
+        <option value="RCCM">RCCM</option>
+        <option value="NINEA">NINEA</option>
+        <option value="LOA">LOA</option>
+        <option value="Autre">Autre</option>
+      </select>
+      <button onclick="openUploadDoc()" id="btn-add-doc" style="padding:9px 18px;font-size:13px;font-weight:600;border:none;border-radius:var(--r);background:var(--blue4);color:#fff;cursor:pointer;font-family:var(--font)">+ Ajouter un document</button>
+    </div>
+    <div id="biblio-body"><div class="loading">Chargement...</div></div>
+  </div>
+
+  <!-- PAYS & OPÉRATEURS -->
+  <div class="page" id="page-pays">
+    <div style="display:flex;gap:0;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1rem;align-self:flex-start;width:fit-content">
+      <button id="pays-tab-list" onclick="switchPaysTab('list')" style="padding:7px 18px;font-size:12px;font-weight:500;border:none;background:var(--blue4);color:#fff;cursor:pointer;font-family:var(--font)">Pays & opérateurs</button>
+      <button id="pays-tab-modeles" onclick="switchPaysTab('modeles')" style="padding:7px 18px;font-size:12px;font-weight:500;border:none;background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font)">Modèles de documents</button>
+    </div>
+    <div id="pays-list-section">
+      <div id="pays-body"><div class="loading">Chargement...</div></div>
+    </div>
+    <div id="pays-modeles-section" style="display:none">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:.875rem">
+        <button onclick="openUploadModele()" id="btn-add-modele" style="padding:8px 16px;font-size:13px;font-weight:600;border:none;border-radius:var(--r);background:var(--blue4);color:#fff;cursor:pointer;font-family:var(--font)">+ Ajouter un modèle</button>
+      </div>
+      <div id="modeles-body"><div class="loading">Chargement...</div></div>
+    </div>
+  </div>
+
+  <!-- UPLOAD DOC MODAL -->
+  <div id="upload-doc-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;overflow-y:auto;padding:2rem 1rem" onclick="if(event.target===this)closeUploadDoc()">
+    <div style="max-width:500px;margin:0 auto;background:var(--surface);border-radius:var(--rl);overflow:hidden" onclick="event.stopPropagation()">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1.5px solid var(--border);background:var(--bg)">
+        <div style="font-size:15px;font-weight:600">Ajouter un document client</div>
+        <button onclick="closeUploadDoc()" style="padding:5px 12px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font)">Annuler</button>
+      </div>
+      <div style="padding:20px;display:flex;flex-direction:column;gap:12px">
+        <div class="field">
+          <label>Client *</label>
+          <select id="ud-client" style="width:100%;padding:8px 11px;font-size:13px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font)">
+            <option value="">— Sélectionner un client —</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Type de document *</label>
+          <select id="ud-type" style="width:100%;padding:8px 11px;font-size:13px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font)">
+            <option value="RCCM">RCCM</option>
+            <option value="NINEA">NINEA</option>
+            <option value="LOA">LOA</option>
+            <option value="Autre">Autre</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Commentaire (optionnel)</label>
+          <input type="text" id="ud-comment" placeholder="Ex: Version signée, original..." style="width:100%;padding:8px 11px;font-size:13px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font)"/>
+        </div>
+        <div class="field">
+          <label>Fichier * (PDF, Word, Image — max 20 MB)</label>
+          <input type="file" id="ud-file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" style="width:100%;padding:8px;font-size:13px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);font-family:var(--font)"/>
+        </div>
+        <div id="ud-error" style="display:none;padding:8px 12px;background:var(--red50);border:1px solid #FCA5A5;border-radius:var(--r);font-size:12px;color:var(--red)"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:12px">
+          <button onclick="closeUploadDoc()" style="padding:8px 16px;font-size:13px;font-weight:500;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font)">Annuler</button>
+          <button onclick="saveDoc()" id="ud-save-btn" style="padding:8px 18px;font-size:13px;font-weight:600;border:none;border-radius:var(--r);background:var(--blue4);color:#fff;cursor:pointer;font-family:var(--font)">Uploader</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- UPLOAD MODÈLE MODAL -->
+  <div id="upload-modele-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;overflow-y:auto;padding:2rem 1rem" onclick="if(event.target===this)closeUploadModele()">
+    <div style="max-width:500px;margin:0 auto;background:var(--surface);border-radius:var(--rl);overflow:hidden" onclick="event.stopPropagation()">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1.5px solid var(--border);background:var(--bg)">
+        <div style="font-size:15px;font-weight:600">Ajouter un modèle de document</div>
+        <button onclick="closeUploadModele()" style="padding:5px 12px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font)">Annuler</button>
+      </div>
+      <div style="padding:20px;display:flex;flex-direction:column;gap:12px">
+        <div class="field">
+          <label>Nom du modèle *</label>
+          <input type="text" id="um-nom" placeholder="Ex: LOA Standard" style="width:100%;padding:8px 11px;font-size:13px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font)"/>
+        </div>
+        <div class="field">
+          <label>Description</label>
+          <input type="text" id="um-desc" placeholder="Ex: Lettre d'autorisation standard" style="width:100%;padding:8px 11px;font-size:13px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font)"/>
+        </div>
+        <div class="g2">
+          <div class="field">
+            <label>Version</label>
+            <input type="text" id="um-version" placeholder="Ex: v1.0" style="width:100%;padding:8px 11px;font-size:13px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font)"/>
+          </div>
+          <div class="field">
+            <label>Pays concerné</label>
+            <input type="text" id="um-pays" placeholder="Tous ou Sénégal..." style="width:100%;padding:8px 11px;font-size:13px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font)"/>
+          </div>
+        </div>
+        <div class="field">
+          <label>Fichier * (PDF, Word — max 20 MB)</label>
+          <input type="file" id="um-file" accept=".pdf,.doc,.docx" style="width:100%;padding:8px;font-size:13px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);font-family:var(--font)"/>
+        </div>
+        <div id="um-error" style="display:none;padding:8px 12px;background:var(--red50);border:1px solid #FCA5A5;border-radius:var(--r);font-size:12px;color:var(--red)"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:12px">
+          <button onclick="closeUploadModele()" style="padding:8px 16px;font-size:13px;font-weight:500;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font)">Annuler</button>
+          <button onclick="saveModele()" id="um-save-btn" style="padding:8px 18px;font-size:13px;font-weight:600;border:none;border-radius:var(--r);background:var(--blue4);color:#fff;cursor:pointer;font-family:var(--font)">Uploader</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- LOOKUP -->
+  <div class="page" id="page-lookup">
+    <div class="stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1rem">
+      <div class="stat-card"><div class="stat-label">Clients</div><div class="stat-num" id="lk-clients">—</div><div class="stat-sub">actifs</div></div>
+      <div class="stat-card"><div class="stat-label">Sender IDs</div><div class="stat-num" id="lk-sids">—</div><div class="stat-sub">déclarés</div></div>
+      <div class="stat-card"><div class="stat-label">Taux approbation</div><div class="stat-num" style="color:var(--green4)" id="lk-rate">—</div><div class="stat-sub">opérateurs validés</div></div>
+      <div class="stat-card"><div class="stat-label">Délai moyen</div><div class="stat-num" style="color:var(--amber4)" id="lk-delay">—</div><div class="stat-sub">soumission → validation</div></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:1rem">
+      <input type="text" id="lk-search" placeholder="🔍  Rechercher un client ou Sender ID..." oninput="renderLookup()"
+        style="flex:1;padding:9px 14px;font-size:13px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font)"/>
+      <select id="lk-pays" onchange="renderLookup()"
+        style="padding:9px 28px 9px 12px;font-size:12px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font);appearance:none">
+        <option value="">Tous les pays</option>
+      </select>
+      <select id="lk-statut" onchange="renderLookup()"
+        style="padding:9px 28px 9px 12px;font-size:12px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font);appearance:none">
+        <option value="">Tous les statuts</option>
+        <option value="approved">Tous approuvés</option>
+        <option value="inprogress">En cours</option>
+        <option value="rejected">Rejeté partiel</option>
+      </select>
+    </div>
+    <div id="lookup-body"><div class="loading">Chargement...</div></div>
+  </div>
+
+  <!-- ADMIN — GESTION UTILISATEURS -->
+  <div class="page" id="page-admin">
+    <div class="card" style="margin-bottom:.875rem">
+      <div class="clabel">Inviter un nouvel utilisateur</div>
+      <div class="g3">
+        <div class="field"><label>Email</label><input type="email" id="inv-email" placeholder="prenom@société.com"/></div>
+        <div class="field"><label>Nom complet</label><input type="text" id="inv-nom" placeholder="Prénom Nom"/></div>
+        <div class="field"><label>Rôle</label>
+          <select id="inv-role">
+            <option value="viewer">Lecteur (lecture seule)</option>
+            <option value="user">Utilisateur</option>
+            <option value="admin">Administrateur</option>
+          </select>
+        </div>
+      </div>
+      <div id="inv-err" class="error-msg" style="display:none"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="inv-btn" onclick="inviteUser()">Inviter par email</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="clabel">Utilisateurs</div>
+      <div id="admin-users-list"><div class="loading">Chargement...</div></div>
+    </div>
+  </div>
+
+<!-- EDIT MODAL -->
+<div id="edit-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;overflow-y:auto;padding:2rem 1rem" onclick="if(event.target===this)closeEdit()">
+  <div style="max-width:700px;margin:0 auto;background:var(--surface);border-radius:var(--rl);overflow:hidden" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1.5px solid var(--border);background:var(--bg)">
+      <div>
+        <div style="font-size:15px;font-weight:500">Modifier le Sender ID</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px" id="edit-subtitle">—</div>
+      </div>
+      <button onclick="closeEdit()" style="padding:6px 12px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font)">Annuler</button>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:12px">
+      <input type="hidden" id="edit-id"/>
+      
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="field"><label>Nom du client</label><input type="text" id="edit-client" placeholder="Nom du client"/></div>
+        <div class="field"><label>Sender ID</label><input type="text" id="edit-sid" placeholder="Ex: WAVEMONEY" maxlength="11"/></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div class="field"><label>Date de demande</label><input type="date" id="edit-ddem"/></div>
+        <div class="field"><label>Date de soumission</label><input type="date" id="edit-dsub"/></div>
+        <div class="field"><label>N° Ticket</label><input type="text" id="edit-ticket" placeholder="TKT-XXXX"/></div>
+      </div>
+      <div class="field"><label>URL Ticket</label><input type="text" id="edit-url" placeholder="https://..."/></div>
+      <div class="field"><label>Commentaires</label><textarea id="edit-comm" style="resize:none;height:60px;width:100%;padding:7px 10px;font-size:13px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font)"></textarea></div>
+
+      <div style="border-top:1px solid var(--border);padding-top:12px">
+        <div style="font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Statuts opérateurs</div>
+        <div id="edit-ops" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:8px;border-top:1px solid var(--border)">
+        <button onclick="closeEdit()" style="padding:8px 18px;font-size:13px;font-weight:500;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font)">Annuler</button>
+        <button onclick="saveEdit()" style="padding:8px 18px;font-size:13px;font-weight:500;border-radius:var(--r);border:none;background:var(--text);color:#fff;cursor:pointer;font-family:var(--font)" id="edit-save-btn">Enregistrer les modifications</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div id="detail-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;overflow-y:auto;padding:2rem 1rem" onclick="if(event.target===this)closeDetail()">
+  <div style="max-width:700px;margin:0 auto;background:var(--surface);border-radius:var(--rl);overflow:hidden" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1.5px solid var(--border);background:var(--bg)">
+      <div>
+        <div style="font-size:15px;font-weight:500" id="detail-title">—</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px;font-family:var(--mono)" id="detail-sid">—</div>
+      </div>
+      <button onclick="closeDetail()" style="padding:6px 12px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font)">Fermer</button>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:var(--bg);border-radius:var(--r);padding:10px 12px">
+          <div style="font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Pays</div>
+          <div style="font-size:13px;font-weight:500" id="detail-pays">—</div>
+        </div>
+        <div style="background:var(--bg);border-radius:var(--r);padding:10px 12px">
+          <div style="font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">N° Ticket</div>
+          <div style="font-size:13px;font-weight:500" id="detail-ticket">—</div>
+        </div>
+        <div style="background:var(--bg);border-radius:var(--r);padding:10px 12px">
+          <div style="font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Date demande</div>
+          <div style="font-size:13px" id="detail-date-dem">—</div>
+        </div>
+        <div style="background:var(--bg);border-radius:var(--r);padding:10px 12px">
+          <div style="font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Date soumission</div>
+          <div style="font-size:13px" id="detail-date-sub">—</div>
+        </div>
+      </div>
+      <div id="detail-url" style="display:none;background:var(--bg);border-radius:var(--r);padding:10px 12px">
+        <div style="font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">URL Ticket</div>
+        <a id="detail-url-link" href="#" target="_blank" style="font-size:13px;color:var(--blue4)">—</a>
+      </div>
+      <div id="detail-comm" style="display:none;background:var(--bg);border-radius:var(--r);padding:10px 12px">
+        <div style="font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Commentaires</div>
+        <div style="font-size:13px;color:var(--text2)" id="detail-comm-text">—</div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Opérateurs</div>
+        <div id="detail-ops" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid var(--border)">
+        <div id="detail-notif"></div>
+        <button onclick="closeDetail()" style="padding:7px 16px;font-size:13px;font-weight:500;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font)">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+const STATUTS = [
+  {v:'Collecte interne',     c:'b-collect'},
+  {v:'En cours de traitement',c:'b-proc'},
+  {v:'En attente d\'info',   c:'b-info'},
+  {v:'Approuvé',             c:'b-ok'},
+  {v:'Approuvé Offnet',      c:'b-offnet'},
+  {v:'Approuvé Partiel',     c:'b-partial'},
+  {v:'Rejeté',               c:'b-rej'},
+  {v:'Suspendu',             c:'b-suspended'}
+];
+const COLORS = {
+  'Collecte interne':       '#B4B2A9',
+  'En cours de traitement': '#378ADD',
+  "En attente d'info":      '#EF9F27',
+  'Approuvé':               '#639922',
+  'Approuvé Offnet':        '#1D9E75',
+  'Approuvé Partiel':       '#5DCAA5',
+  'Rejeté':                 '#E24B4A',
+  'Suspendu':               '#BA7517',
+};
+
+let allPays = [];
+let allOperateurs = [];
+let allSenderIds = [];
+let filteredSenderIds = [];
+let listOffset = 0;
+
+// ── AUTH HELPERS ──
+function getToken()   { return localStorage.getItem('sid_token'); }
+function saveToken(t) { localStorage.setItem('sid_token', t); }
+function saveUser(u)  { localStorage.setItem('sid_user', JSON.stringify(u)); }
+function clearToken() { localStorage.removeItem('sid_token'); localStorage.removeItem('sid_user'); }
+function getCurrentUser() { try { return JSON.parse(localStorage.getItem('sid_user') || 'null'); } catch { return null; } }
+
+function showToast(msg, type = 'success') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  const icon = type === 'success'
+    ? '<svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg>'
+    : '<svg viewBox="0 0 12 12"><line x1="2" y1="2" x2="10" y2="10"/><line x1="10" y1="2" x2="2" y2="10"/></svg>';
+  t.className = `toast ${type}`;
+  t.innerHTML = `<div class="toast-icon">${icon}</div><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(() => {
+    t.classList.add('toast-out');
+    t.addEventListener('animationend', () => t.remove());
+  }, 3000);
+}
+
+async function api(url, opts={}) {
+  const token = getToken();
+  const headers = {'Content-Type': 'application/json'};
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  const r = await fetch(API + url, { headers, ...opts });
+  if (r.status === 401) { goToLogin(); throw new Error('Session expirée, reconnectez-vous'); }
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+function badge(s) {
+  const x = STATUTS.find(t => t.v === s) || {c:'b-wait'};
+  return `<span class="badge ${x.c}">${s||'—'}</span>`;
+}
+
+function isFullyApproved(e) {
+  return e.operateurs && e.operateurs.length > 0 &&
+    e.operateurs.every(o => ['Approuvé','Approuvé Offnet','Approuvé Partiel'].includes(o.statut));
+}
+
+function prog(e) {
+  const ops = e.operateurs || [];
+  const ok = ops.filter(o => ['Approuvé','Approuvé Offnet','Approuvé Partiel'].includes(o.statut)).length;
+  const total = ops.length;
+  const pct = total ? Math.round(ok / total * 100) : 0;
+  const col = pct === 100 ? '#639922' : pct > 50 ? '#378ADD' : '#EF9F27';
+  return `<div class="prog-wrap">
+    <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${col}"></div></div>
+    <span class="prog-lbl">${ok}/${total}</span>
+  </div>`;
+}
+
+function notifPill(e) {
+  if (!isFullyApproved(e)) return '—';
+  if (e.notifie) return `<span class="notify-pill notified-pill">✓ Client informé</span>`;
+  return `<span class="notify-pill" onclick="notifyClient('${e._id}',this)">● À notifier</span>`;
+}
+
+function updateTabDot() {
+  const n = allSenderIds.filter(e => isFullyApproved(e) && !e.notifie).length;
+  const tab = document.getElementById('tab-list');
+  let dot = tab.querySelector('.tab-dot');
+  if (n > 0) { if (!dot) { dot = document.createElement('span'); dot.className = 'tab-dot'; tab.appendChild(dot); } }
+  else { if (dot) dot.remove(); }
+}
+
+async function notifyClient(id, btn) {
+  try {
+    const e = allSenderIds.find(x => x._id === id);
+
+    // Ouvrir le ticket Zoho si disponible
+    if (e && e.url_ticket) {
+      window.open(e.url_ticket, '_blank');
+    } else {
+      alert('Aucune URL de ticket trouvée pour ce Sender ID. La notification sera quand même enregistrée.');
+    }
+
+    // Marquer comme notifié en base
+    await api(`/api/sender-ids/${id}/notifier`, {method:'PUT'});
+    if (e) e.notifie = true;
+    updateTabDot();
+    renderList();
+    renderNotifyAlerts();
+    if (document.getElementById('page-dash').classList.contains('active')) renderDash();
+    showToast('Client marqué comme notifié');
+  } catch(err) { showToast('Erreur : ' + err.message, 'error'); }
+}
+
+function renderNotifyAlerts() {
+  const toNotify = allSenderIds.filter(e => isFullyApproved(e) && !e.notifie);
+  ['notify-zone','dash-notify-zone'].forEach(zid => {
+    const z = document.getElementById(zid); if (!z) return;
+    if (!toNotify.length) { z.innerHTML = ''; return; }
+    z.innerHTML = `<div class="alert-card">
+      <div class="alert-header">
+        <div class="alert-icon"><svg viewBox="0 0 14 14"><path d="M7 1C4 1 1 3 1 7c0 1 .4 2 1 2.8L1 13l3.2-1C5 12.6 6 13 7 13c3 0 6-2 6-6s-3-6-6-6z"/></svg></div>
+        <div><div class="alert-title">${toNotify.length} client${toNotify.length>1?'s':''} à informer</div>
+        <div class="alert-sub">Tous les opérateurs ont été validés.</div></div>
+      </div>
+      ${toNotify.map(e => `<div class="alert-item">
+        <div><div class="ai-client">${e.nom_client} — <span style="font-family:var(--mono);font-size:11px">${e.sender_id}</span></div>
+        <div class="ai-detail">${e.pays_nom||''} · ${(e.operateurs||[]).length} opérateurs tous approuvés</div></div>
+        <button class="ai-btn" onclick="notifyClient('${e._id}',this)">Informer le client</button>
+      </div>`).join('')}
+    </div>`;
+  });
+}
+
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'form')   { if (!document.getElementById('sids-container').children.length) addSenderBlock(); updateClientDatalist(); }
+  if (id === 'list')   { loadSenderIds(); }
+  if (id === 'dash')   { loadDash(); }
+  if (id === 'biblio') { loadBiblio(); }
+  if (id === 'pays')   { loadPaysPage(); }
+  if (id === 'lookup') { loadLookup(); }
+  if (id === 'admin')  { loadAdminUsers(); }
+}
+
+// ─── FORMULAIRE ───────────────────────────────────────────────────────────────
+
+async function loadPays() {
+  try {
+    allPays = await api('/api/pays');
+    allPays.sort((a,b) => a.nom.localeCompare(b.nom));
+    allPays.forEach(p => {
+      const pid = p._id?.$oid || p._id?.toString() || p._id;
+      p._id = pid;
+    });
+    // Remplir le select du formulaire
+    const selForm = document.getElementById('f-pays');
+    if (selForm) {
+      allPays.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p._id;
+        opt.textContent = p.nom + (p.indicatif ? ` (${p.indicatif})` : '');
+        selForm.appendChild(opt);
+      });
+    }
+    // Remplir le select du filtre liste
+    const selList = document.getElementById('f-pays-list');
+    if (selList) {
+      allPays.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p._id;
+        opt.textContent = p.nom;
+        selList.appendChild(opt);
+      });
+    }
+    allOperateurs = await api('/api/operateurs');
+  } catch(err) { console.error('Erreur chargement pays:', err); }
+}
+
+// ─── FORMULAIRE MULTI-SENDER ──────────────────────────────────────────────────
+
+let sidBlockCount = 0;
+let formOperateurs = []; // opérateurs du pays sélectionné
+
+function onFormPaysChange(pays_id) {
+  const opsCard = document.getElementById('ops-card');
+  const opsBody = document.getElementById('ops-card-body');
+  // Reset sender blocks statuts
+  sidBlockCount = 0;
+  document.getElementById('sids-container').innerHTML = '';
+
+  if (!pays_id) {
+    opsCard.style.display = 'none';
+    formOperateurs = [];
+    addSenderBlock();
+    return;
+  }
+
+  formOperateurs = allOperateurs.filter(op => {
+    const opPaysId = op.pays_id?.$oid || op.pays_id?.toString() || op.pays_id;
+    return opPaysId === pays_id;
+  });
+
+  if (!formOperateurs.length) {
+    opsCard.style.display = 'none';
+    addSenderBlock();
+    return;
+  }
+
+  // Afficher la liste des opérateurs (info seulement)
+  opsCard.style.display = 'block';
+  opsBody.innerHTML = formOperateurs.map(op =>
+    `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border:1.5px solid var(--border);border-radius:var(--r);background:var(--bg);margin-bottom:5px">
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:600">${op.nom}</div>
+        <div style="font-size:10px;color:var(--text3);font-family:var(--mono)">MCC: ${op.mcc||'—'} · MNC: ${op.mnc||'—'}</div>
+      </div>
+    </div>`
+  ).join('');
+
+  addSenderBlock();
+}
+
+function getStatClass(v) {
+  return {
+    'Approuvé':'ok','Approuvé Offnet':'offnet','Approuvé Partiel':'partial',
+    'En cours de traitement':'proc','Rejeté':'rej','Suspendu':'suspended',
+    "En attente d'info":'info'
+  }[v] || 'wait';
+}
+
+function addSenderBlock() {
+  sidBlockCount++;
+  const idx = sidBlockCount;
+  const container = document.getElementById('sids-container');
+  const block = document.createElement('div');
+  block.id = 'sid-block-' + idx;
+  block.style.cssText = 'padding:12px;border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:8px;background:var(--bg)';
+
+  // Statuts par opérateur pour ce sender
+  const opStatuts = formOperateurs.map((op, i) => {
+    const opts = STATUTS.map(s => `<option value="${s.v}">${s.v}</option>`).join('');
+    return `<div class="op-row wait" id="opr-${idx}-${i}" style="margin-bottom:5px">
+      <div><div class="op-name">${op.nom}</div><div class="op-meta">MCC: ${op.mcc||'—'} · MNC: ${op.mnc||'—'}</div></div>
+      <div class="op-desc">${op.description||''}</div>
+      <select class="op-sel" onchange="onStatutChangeBlock(${idx},${i},this)">
+        ${opts}
+      </select>
+    </div>`;
+  }).join('');
+
+  const mbVal = formOperateurs.length ? '10px' : '0';
+  const deleteBtn = idx > 1 ? '<button onclick="removeSenderBlock(' + idx + ')" style="margin-top:18px;padding:6px 12px;font-size:11px;border:1.5px solid var(--red4);border-radius:5px;background:transparent;color:var(--red);cursor:pointer;font-family:var(--font);flex-shrink:0">&#x2715;</button>' : '';
+
+  block.innerHTML = '<div style="display:flex;align-items:center;gap:10px;margin-bottom:' + mbVal + '">'
+    + '<div class="field" style="flex:1;margin:0">'
+    + '<label style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Sender ID ' + idx + ' *</label>'
+    + '<input type="text" id="sid-' + idx + '" placeholder="Ex: WAVEMONEY" maxlength="11" oninput="validateSidInput(this)" style="width:100%;padding:7px 10px;font-size:14px;font-weight:600;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--mono)"/>'
+    + '<div id="sid-hint-' + idx + '" style="font-size:11px;color:var(--text3);margin-top:4px">0 / 11 caractères</div>'
+    + '</div>'
+    + deleteBtn
+    + '</div>'
+
+  const opsSection = formOperateurs.length
+    ? '<div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Statuts op&eacute;rateurs</div>' + opStatuts
+    : '<div class="empty-ops">Choisissez d\'abord un pays</div>';
+  block.innerHTML += opsSection;
+  if (container.firstChild) container.insertBefore(block, container.firstChild);
+  else container.appendChild(block);
+  block.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function removeSenderBlock(idx) {
+  document.getElementById('sid-block-' + idx)?.remove();
+}
+
+function onStatutChangeBlock(idx, i, sel) {
+  const row = document.getElementById('opr-' + idx + '-' + i);
+  if (row) row.className = 'op-row ' + getStatClass(sel.value);
+}
+
+function validateSidInput(input) {
+  const len = input.value.length;
+  const idx = input.id.replace('sid-', '');
+  const hint = document.getElementById('sid-hint-' + idx);
+  if (!hint) return;
+  if (len >= 11) {
+    hint.textContent = '11 / 11 caractères — limite atteinte';
+    hint.style.color = 'var(--red4)';
+    input.style.borderColor = 'var(--red4)';
+  } else if (len >= 9) {
+    hint.textContent = len + ' / 11 caractères';
+    hint.style.color = 'var(--amber4)';
+    input.style.borderColor = 'var(--amber4)';
+  } else {
+    hint.textContent = len + ' / 11 caractères';
+    hint.style.color = 'var(--text3)';
+    input.style.borderColor = 'var(--border2)';
+  }
+}
+
+function updateClientDatalist() {
+  const dl = document.getElementById('clients-datalist');
+  if (!dl) return;
+  const names = [...new Set(allSenderIds.map(e => e.nom_client).filter(Boolean))].sort();
+  dl.innerHTML = names.map(n => `<option value="${n.replace(/"/g,'&quot;')}">`).join('');
+}
+
+function addSenderForClient(clientName, paysId) {
+  ['f-client','f-ticket','f-url','f-comm','f-ddem','f-dsub'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('sids-container').innerHTML = '';
+  document.getElementById('ops-card').style.display = 'none';
+  sidBlockCount = 0;
+  formOperateurs = [];
+  showPage('form', document.getElementById('tab-form'));
+  document.getElementById('f-client').value = clientName;
+  if (paysId) {
+    document.getElementById('f-pays').value = paysId;
+    onFormPaysChange(paysId);
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function saveEntry() {
+  const client = document.getElementById('f-client').value.trim();
+  const pays_id = document.getElementById('f-pays').value;
+
+  if (!client || !pays_id) {
+    document.getElementById('form-error').innerHTML = '<div class="error-msg">Veuillez renseigner le nom du client et le pays.</div>';
+    return;
+  }
+
+  const blocks = document.querySelectorAll('[id^="sid-block-"]');
+  if (!blocks.length) {
+    document.getElementById('form-error').innerHTML = '<div class="error-msg">Ajoutez au moins un Sender ID.</div>';
+    return;
+  }
+
+  const entries = [];
+  let hasError = false;
+  blocks.forEach(block => {
+    const idx = block.id.replace('sid-block-', '');
+    const sid = document.getElementById('sid-' + idx)?.value.trim().toUpperCase();
+    if (!sid) { hasError = true; return; }
+    const opRows = block.querySelectorAll('.op-row');
+    const operateurs = [...opRows].map((r, i) => {
+      const op = formOperateurs[i];
+      return {
+        operateur_id: op?._id?.$oid || op?._id?.toString() || op?._id || '',
+        nom: r.querySelector('.op-name')?.textContent?.trim() || '',
+        statut: r.querySelector('.op-sel')?.value || STATUTS[0].v,
+        date_approbation: null
+      };
+    });
+    entries.push({ sid, operateurs });
+  });
+
+  if (hasError) {
+    document.getElementById('form-error').innerHTML = '<div class="error-msg">Renseignez tous les Sender IDs.</div>';
+    return;
+  }
+
+  document.getElementById('form-error').innerHTML = '';
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true;
+
+  try {
+    for (let i = 0; i < entries.length; i++) {
+      btn.textContent = `Enregistrement ${i+1}/${entries.length}...`;
+      await api('/api/sender-ids', {
+        method: 'POST',
+        body: JSON.stringify({
+          nom_client:      client,
+          sender_id:       entries[i].sid,
+          pays_id,
+          date_demande:    document.getElementById('f-ddem').value || new Date().toISOString(),
+          date_soumission: document.getElementById('f-dsub').value || null,
+          numero_ticket:   document.getElementById('f-ticket').value.trim(),
+          url_ticket:      document.getElementById('f-url').value.trim(),
+          commentaires:    document.getElementById('f-comm').value.trim(),
+          operateurs:      entries[i].operateurs
+        })
+      });
+    }
+    // Reset
+    ['f-client','f-ticket','f-url','f-comm','f-ddem','f-dsub'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('f-pays').value = '';
+    document.getElementById('ops-card').style.display = 'none';
+    document.getElementById('sids-container').innerHTML = '';
+    sidBlockCount = 0;
+    formOperateurs = [];
+    addSenderBlock();
+    showToast('Sender ID enregistré avec succès');
+    showPage('list', document.getElementById('tab-list'));
+  } catch(err) {
+    showToast('Erreur : ' + err.message, 'error');
+    document.getElementById('form-error').innerHTML = `<div class="error-msg">Erreur: ${err.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Enregistrer';
+  }
+}
+
+// ─── LISTE ────────────────────────────────────────────────────────────────────
+
+async function loadSenderIds() {
+  document.getElementById('list-loading').style.display = 'block';
+  document.getElementById('list-table').style.display = 'none';
+  try {
+    allSenderIds = await api('/api/sender-ids');
+    allSenderIds.forEach(e => {
+      const p = allPays.find(p => p._id === (e.pays_id?.$oid || e.pays_id?.toString() || e.pays_id));
+      e.pays_nom = p ? p.nom : '—';
+    });
+    filteredSenderIds = [...allSenderIds];
+    listOffset = 0;
+    updateTabDot();
+    renderList();
+    renderNotifyAlerts();
+  } catch(err) { console.error(err); }
+  finally { document.getElementById('list-loading').style.display = 'none'; }
+}
+
+function getBadgeClass(s) {
+  const map = {
+    'Collecte interne':'b-collect','En cours de traitement':'b-proc',
+    "En attente d'info":'b-info','Approuvé':'b-ok',
+    'Approuvé Offnet':'b-offnet','Approuvé Partiel':'b-partial',
+    'Rejeté':'b-rej','Suspendu':'b-suspended'
+  };
+  return map[s] || 'b-collect';
+}
+
+function filterList() {
+  const q = document.getElementById('search-inp').value.toLowerCase();
+  const fs = document.getElementById('f-statut').value;
+  const fp = document.getElementById('f-pays-list').value;
+  filteredSenderIds = allSenderIds.filter(e => {
+    const allSt = (e.operateurs||[]).map(o => o.statut).join(' ');
+    const match = !q || (e.nom_client+e.sender_id+(e.pays_nom||'')+allSt).toLowerCase().includes(q);
+    const ms = !fs || (e.operateurs||[]).some(o => o.statut === fs);
+    const mp = !fp || (e.pays_id?.$oid || e.pays_id?.toString() || e.pays_id) === fp;
+    return match && ms && mp;
+  });
+  listOffset = 0;
+  renderList();
+}
+
+function confirmDelete(id, client, sid) {
+  if (confirm(`Supprimer le Sender ID "${sid}" de ${client} ?\nCette action est irréversible.`)) {
+    deleteEntry(id);
+  }
+}
+
+async function deleteEntry(id) {
+  try {
+    await api(`/api/sender-ids/${id}`, {method: 'DELETE'});
+    allSenderIds = allSenderIds.filter(e => e._id !== id);
+    filteredSenderIds = filteredSenderIds.filter(e => e._id !== id);
+    updateTabDot();
+    renderList();
+    renderNotifyAlerts();
+    showToast('Sender ID supprimé');
+  } catch(err) { showToast('Erreur suppression : ' + err.message, 'error'); }
+}
+
+async function updateStatut(senderId, operateurId, newStatut, selectEl) {
+  const originalVal = selectEl.getAttribute('data-prev') || newStatut;
+  selectEl.setAttribute('data-prev', newStatut);
+
+  // Update badge class visually
+  selectEl.className = 'inline-sel ' + getBadgeClass(newStatut);
+
+  try {
+    await api(`/api/sender-ids/${senderId}/operateur-statut`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        operateur_id: operateurId,
+        statut: newStatut,
+        date_approbation: ['Approuvé','Approuvé Offnet','Approuvé Partiel'].includes(newStatut) ? new Date().toISOString() : null
+      })
+    });
+
+    // Update local data
+    const entry = allSenderIds.find(e => e._id === senderId);
+    if (entry) {
+      const op = entry.operateurs.find(o => (o.operateur_id?.$oid || o.operateur_id) === operateurId);
+      if (op) op.statut = newStatut;
+    }
+
+    updateTabDot();
+    renderNotifyAlerts();
+
+    showToast('Statut mis à jour');
+  } catch(err) {
+    showToast('Erreur mise à jour : ' + err.message, 'error');
+    selectEl.value = originalVal;
+    selectEl.setAttribute('data-prev', originalVal);
+    selectEl.className = 'inline-sel ' + getBadgeClass(originalVal);
+  }
+}
+
+const ZOHO_BASE = 'https://desk.zoho.com/agent/lafricamobilecom/lafricamobile/accounts/list/';
+const ZOHO_VIEWS = {
+  'senegal':                          'vue-senegal',
+  'benin':                            'vue-benin',
+  'cote divoire':                     'vue-cote-divoire',
+  'cote d ivoire':                    'vue-cote-divoire',
+  'cote-d-ivoire':                    'vue-cote-divoire',
+  'congo':                            'vue-congo',
+  'gabon':                            'vue-gabon',
+  'mali':                             'vuemali',
+  'niger':                            'vue-niger',
+  'rdc':                              'vue-rdc',
+  'republique democratique du congo': 'vue-rdc',
+  'togo':                             'vue-togo',
+  'cameroun':                         'vue-cameroun',
+  'guinee':                           'vue-guinee',
+  'burkina faso':                     'vue-burkina-faso',
+  'tchad':                            'vue-tchad',
+  'centrafrique':                     'vue-centrafrique',
+  'nigeria':                          'vue-nigeria',
+};
+
+function normalizePays(nom) {
+  return (nom || '').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/['’]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function zohoBtn(paysNom) {
+  const slug = ZOHO_VIEWS[normalizePays(paysNom)];
+  if (!slug) return '';
+  return `<a href="${ZOHO_BASE}${slug}" target="_blank" title="Voir dans Zoho Desk"
+    style="display:inline-flex;align-items:center;gap:4px;margin-top:5px;padding:3px 8px;font-size:10px;font-weight:600;border:1.5px solid #E8A825;border-radius:4px;background:#FFF8E6;color:#8B5E00;text-decoration:none;font-family:var(--font);cursor:pointer;white-space:nowrap">
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+    Zoho
+  </a>`;
+}
+
+function loadMoreList() {
+  listOffset += 10;
+  renderList();
+}
+
+function renderList() {
+  const tbody = document.getElementById('list-body');
+  const table = document.getElementById('list-table');
+  const empty = document.getElementById('list-empty');
+  const pagination = document.getElementById('list-pagination');
+  const paginationCount = document.getElementById('list-pagination-count');
+  const paginationLabel = document.getElementById('list-pagination-label');
+
+  if (!filteredSenderIds.length) {
+    table.style.display = 'none'; empty.style.display = 'block';
+    pagination.style.display = 'none'; return;
+  }
+  empty.style.display = 'none'; table.style.display = 'table';
+
+  const byClient = {};
+  filteredSenderIds.forEach(e => {
+    const key = e.nom_client || '—';
+    if (!byClient[key]) byClient[key] = [];
+    byClient[key].push(e);
+  });
+
+  const allEntries = Object.entries(byClient);
+  const totalClients = allEntries.length;
+  const visibleEntries = allEntries.slice(0, listOffset + 10);
+  const remaining = totalClients - visibleEntries.length;
+
+  if (remaining > 0) {
+    pagination.style.display = 'block';
+    paginationLabel.textContent = `Charger ${Math.min(remaining, 10)} suivants`;
+    paginationCount.textContent = `${visibleEntries.length} / ${totalClients} clients affichés`;
+  } else {
+    pagination.style.display = 'none';
+  }
+
+  const rows = [];
+  visibleEntries.forEach(([client, senders]) => {
+    const total = senders.length;
+    senders.forEach((e, idx) => {
+      const ops = (e.operateurs||[]).map(o => {
+        const opId = o.operateur_id?.$oid || o.operateur_id?.toString() || o.operateur_id;
+        const opts = STATUTS.map(s => `<option value="${s.v}" ${s.v===o.statut?'selected':''}>${s.v}</option>`).join('');
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:3px 0;border-bottom:1.5px solid var(--border);gap:8px">
+          <span style="font-size:11px;color:var(--text2);flex:1">${o.nom}</span>
+          <select class="inline-sel ${getBadgeClass(o.statut)}"
+            data-prev="${o.statut}"
+            onchange="updateStatut('${e._id}','${opId}',this.value,this)"
+            style="font-size:11px;padding:2px 6px;border-radius:4px;border:none;cursor:pointer;font-family:var(--font);font-weight:500;appearance:none">
+            ${opts}
+          </select>
+        </div>`;
+      }).join('');
+
+      const gs = isFullyApproved(e)
+        ? '<span class="badge b-ok">Tous approuvés</span>'
+        : (e.operateurs||[]).some(o=>o.statut==='Rejeté')
+          ? '<span class="badge b-rej">Rejeté partiel</span>'
+          : '<span class="badge b-proc">En cours</span>';
+      const date = e.date_demande ? new Date(e.date_demande).toLocaleDateString('fr-FR') : '—';
+      const ticketLink = e.url_ticket
+        ? `<a href="${e.url_ticket}" target="_blank" style="color:var(--blue4);text-decoration:none;border-bottom:1px dashed var(--blue4)">${e.numero_ticket||'Voir ticket'}</a>`
+        : `<span style="color:var(--text3)">${e.numero_ticket||'—'}</span>`;
+
+      let clientCell = '';
+      if (idx === 0) {
+        const cPaysId = e.pays_id?.$oid || e.pays_id?.toString() || e.pays_id || '';
+        clientCell = `<td style="font-weight:600;vertical-align:top;padding-top:12px;border-right:1.5px solid var(--border)" rowspan="${total}">
+          <span style="cursor:pointer;color:var(--blue);text-decoration:underline;text-underline-offset:2px" onclick="openDetail('${e._id}')">${e.nom_client}</span>
+          <div style="margin-top:6px;display:inline-flex;align-items:center;padding:2px 9px;background:var(--blue50);border:1.5px solid var(--blueb);border-radius:20px;font-size:10px;font-weight:700;color:var(--blue)">
+            ${total} Sender${total > 1 ? ' IDs' : ' ID'}
+          </div>
+          ${window.__viewerMode ? '' : `<div style="margin-top:8px"><button onclick="addSenderForClient(${JSON.stringify(e.nom_client).replace(/"/g,'&quot;')},'${cPaysId}')" style="padding:3px 9px;font-size:10px;font-weight:600;border:1.5px solid var(--blue4);border-radius:5px;background:transparent;color:var(--blue);cursor:pointer;font-family:var(--font)">+ Sender ID</button></div>`}
+        </td>`;
+      }
+
+      const trBorder = idx > 0 ? 'style="border-top:1.5px dashed var(--border)"' : '';
+      rows.push(`<tr ${trBorder}>
+        ${clientCell}
+        <td style="font-family:var(--mono);font-size:12px;vertical-align:top;padding-top:10px;font-weight:600">
+          ${e.sender_id}
+          <div style="font-size:10px;margin-top:3px">${ticketLink}</div>
+        </td>
+        <td class="td-m" style="vertical-align:top;padding-top:12px">
+          <div>${e.pays_nom}</div>${zohoBtn(e.pays_nom)}
+        </td>
+        <td style="vertical-align:top;padding-top:8px"><div style="min-width:180px">${ops}</div>${prog(e)}</td>
+        <td style="vertical-align:top;padding-top:12px">${gs}</td>
+        <td class="td-m" style="vertical-align:top;padding-top:12px">${date}</td>
+        <td style="vertical-align:top;padding-top:10px">${notifPill(e)}</td>
+        <td style="vertical-align:top;padding-top:8px">
+          ${window.__viewerMode ? '' : `
+          <button onclick="openEdit('${e._id}')"
+            style="padding:4px 8px;font-size:11px;border:1.5px solid var(--blue4);border-radius:5px;background:transparent;color:var(--blue);cursor:pointer;font-family:var(--font);margin-bottom:4px;display:block;width:100%">
+            Modifier
+          </button>
+          <button onclick="confirmDelete('${e._id}',${JSON.stringify(e.nom_client).replace(/"/g,'&quot;')},${JSON.stringify(e.sender_id).replace(/"/g,'&quot;')})"
+            style="padding:4px 8px;font-size:11px;border:1.5px solid var(--red4);border-radius:5px;background:transparent;color:var(--red);cursor:pointer;font-family:var(--font);display:block;width:100%">
+            Supprimer
+          </button>`}
+        </td>
+      </tr>`);
+    });
+  });
+  tbody.innerHTML = rows.join('');
+}
+
+
+// ─── DASHBOARD ────────────────────────────────────────────────────────────────
+
+async function loadDash() {
+  try {
+    const [stats, senderIds] = await Promise.all([
+      api('/api/stats'),
+      api('/api/sender-ids')
+    ]);
+
+    // Update local data too
+    allSenderIds = senderIds;
+    allSenderIds.forEach(e => {
+      const p = allPays.find(p => p._id === (e.pays_id?.$oid || e.pays_id?.toString() || e.pays_id));
+      e.pays_nom = p ? p.nom : '—';
+    });
+
+    // Stats cards
+    document.getElementById('d-total').textContent = stats.total;
+    document.getElementById('d-ok').textContent = stats.fullyApproved;
+    document.getElementById('d-notify').textContent = stats.toNotify;
+    document.getElementById('d-notified').textContent = stats.notified;
+
+    // Extra stats from local data
+    const inProgress = allSenderIds.filter(e =>
+      !isFullyApproved(e) && (e.operateurs||[]).some(o =>
+        ['En cours de traitement',"En attente d'info"].includes(o.statut)
+      )
+    ).length;
+    const rejected = allSenderIds.filter(e =>
+      (e.operateurs||[]).some(o => o.statut === 'Rejeté')
+    ).length;
+    const totalOps = allSenderIds.reduce((acc, e) => acc + (e.operateurs||[]).length, 0);
+
+    document.getElementById('d-inprogress').textContent = inProgress;
+    document.getElementById('d-rejected').textContent = rejected;
+    document.getElementById('d-total-ops').textContent = totalOps;
+
+    // Bar chart statuts
+    const maxS = Math.max(1, ...Object.values(stats.statuts));
+    document.getElementById('bar-statut').innerHTML = Object.entries(stats.statuts)
+      .sort((a,b) => b[1]-a[1])
+      .map(([s,n]) => `<div class="chart-row">
+        <div class="chart-label">${s}</div>
+        <div class="chart-bar-bg"><div class="chart-bar" style="width:${Math.round(n/maxS*100)}%;background:${COLORS[s]||'#888'}"></div></div>
+        <div class="chart-val">${n}</div>
+      </div>`).join('');
+
+    // Bar chart pays
+    const pCount = {};
+    allSenderIds.forEach(e => {
+      const p = e.pays_nom || '—';
+      pCount[p] = (pCount[p]||0) + 1;
+    });
+    const maxP = Math.max(1, ...Object.values(pCount));
+    document.getElementById('bar-pays').innerHTML = Object.entries(pCount)
+      .sort((a,b) => b[1]-a[1])
+      .map(([p,n]) => `<div class="chart-row">
+        <div class="chart-label">${p}</div>
+        <div class="chart-bar-bg"><div class="chart-bar" style="width:${Math.round(n/maxP*100)}%;background:var(--blue4)"></div></div>
+        <div class="chart-val">${n}</div>
+      </div>`).join('');
+
+    // Recent table
+    document.getElementById('dash-recent').innerHTML = allSenderIds.slice(0,8).map(e => {
+      const gs = isFullyApproved(e)
+        ? `<span class="badge b-ok">Tous approuvés</span>`
+        : (e.operateurs||[]).some(o=>o.statut==='Rejeté')
+          ? `<span class="badge b-rej">Rejeté partiel</span>`
+          : `<span class="badge b-proc">En cours</span>`;
+      return `<tr>
+        <td style="font-weight:500">${e.nom_client}</td>
+        <td style="font-family:var(--mono);font-size:12px">${e.sender_id}</td>
+        <td style="color:var(--text2)">${e.pays_nom}</td>
+        <td>${prog(e)}</td>
+        <td>${gs}</td>
+        <td>${notifPill(e)}</td>
+      </tr>`;
+    }).join('');
+
+    renderNotifyAlerts();
+  } catch(err) { console.error(err); }
+}
+
+function renderDash() { loadDash(); }
+
+// ─── BIBLIOTHÈQUE ────────────────────────────────────────────────────────────
+
+let allDocs = [];
+let filteredDocs = [];
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024*1024) return Math.round(bytes/1024) + ' KB';
+  return (bytes/(1024*1024)).toFixed(1) + ' MB';
+}
+
+function fileIcon(mimetype) {
+  if (mimetype?.includes('pdf')) return '📄';
+  if (mimetype?.includes('word') || mimetype?.includes('document')) return '📝';
+  if (mimetype?.includes('image')) return '🖼️';
+  return '📎';
+}
+
+function typeBadge(type) {
+  const map = {
+    'RCCM':  'b-blue', 'NINEA': 'b-green',
+    'LOA':   'b-purple', 'Autre': 'b-gray'
+  };
+  return `<span class="badge ${map[type]||'b-gray'}">${type}</span>`;
+}
+
+async function loadBiblio() {
+  try {
+    allDocs = await api('/api/documents');
+    filteredDocs = [...allDocs];
+    renderBiblio();
+  } catch(err) { console.error(err); }
+}
+
+function filterBiblio() {
+  const q = document.getElementById('biblio-search').value.toLowerCase();
+  const t = document.getElementById('biblio-type').value;
+  filteredDocs = allDocs.filter(d => {
+    const match = !q || (d.nom_client+d.nom_original+d.type).toLowerCase().includes(q);
+    const mt = !t || d.type === t;
+    return match && mt;
+  });
+  renderBiblio();
+}
+
+function renderBiblio() {
+  const body = document.getElementById('biblio-body');
+  if (!filteredDocs.length) {
+    body.innerHTML = '<div class="loading">Aucun document trouvé — cliquez sur "+ Ajouter un document"</div>';
+    return;
+  }
+  // Group by client
+  const byClient = {};
+  filteredDocs.forEach(d => {
+    const key = d.nom_client || 'Client inconnu';
+    if (!byClient[key]) byClient[key] = [];
+    byClient[key].push(d);
+  });
+
+  const DOC_TYPES = ['RCCM','NINEA','LOA','Autre'];
+
+  body.innerHTML = Object.entries(byClient).map(([client, docs]) => {
+    const types = docs.map(d => d.type);
+    const typeBadges = DOC_TYPES.map(t => {
+      const has = types.includes(t);
+      return has
+        ? `<span class="badge b-green">${t} ✓</span>`
+        : `<span class="badge b-gray" style="opacity:.6">${t} —</span>`;
+    }).join('');
+
+    const docRows = docs.map(d => {
+      const date = new Date(d.created_at).toLocaleDateString('fr-FR');
+      return `<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--r);background:var(--bg);margin-bottom:6px">
+        <div style="width:34px;height:34px;border-radius:7px;background:var(--blue50);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">${fileIcon(d.mimetype)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.nom_original}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;font-family:var(--mono)">${typeBadge(d.type)} · ${formatSize(d.taille)} · Ajouté ${date}</div>
+        </div>
+        <div style="display:flex;gap:5px;flex-shrink:0">
+          <a href="${d.chemin}" target="_blank" style="padding:4px 9px;font-size:10px;font-weight:600;border:1px solid var(--border2);border-radius:5px;background:var(--surface);color:var(--text2);cursor:pointer;text-decoration:none;font-family:var(--font)">Voir</a>
+          <a href="${d.chemin}" download="${d.nom_original}" style="padding:4px 9px;font-size:10px;font-weight:600;border:1px solid var(--border2);border-radius:5px;background:var(--surface);color:var(--text2);cursor:pointer;text-decoration:none;font-family:var(--font)">Télécharger</a>
+          ${window.__viewerMode ? '' : `<button onclick="deleteDoc('${d._id}')" style="padding:4px 9px;font-size:10px;font-weight:600;border:1px solid #FCA5A5;border-radius:5px;background:var(--red50);color:var(--red);cursor:pointer;font-family:var(--font)">Suppr.</button>`}
+        </div>
+      </div>`;
+    }).join('');
+
+    return `<div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rl);padding:14px 16px;margin-bottom:10px;box-shadow:var(--shadow-sm)">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
+        <div>
+          <div style="font-size:14px;font-weight:600">${client}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px;font-weight:500">${docs.length} document${docs.length>1?'s':''}</div>
+        </div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">${typeBadges}</div>
+      </div>
+      ${docRows}
+      <div style="border:2px dashed var(--border2);border-radius:var(--r);padding:12px;text-align:center;color:var(--text3);font-size:12px;font-weight:500;cursor:pointer;margin-top:4px" onclick="openUploadDocForClient('${client}')">+ Déposer un document pour ${client}</div>
+    </div>`;
+  }).join('');
+}
+
+function openUploadDoc() {
+  populateClientSelect();
+  document.getElementById('upload-doc-overlay').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function openUploadDocForClient(clientName) {
+  populateClientSelect(clientName);
+  document.getElementById('upload-doc-overlay').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeUploadDoc() {
+  document.getElementById('upload-doc-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+  document.getElementById('ud-file').value = '';
+  document.getElementById('ud-error').style.display = 'none';
+}
+
+function populateClientSelect(selected='') {
+  const sel = document.getElementById('ud-client');
+  const clients = [...new Set(allSenderIds.map(e => e.nom_client))].sort();
+  sel.innerHTML = '<option value="">— Sélectionner un client —</option>' +
+    clients.map(c => `<option value="${c}" ${c===selected?'selected':''}>${c}</option>`).join('');
+}
+
+async function saveDoc() {
+  const client = document.getElementById('ud-client').value;
+  const type   = document.getElementById('ud-type').value;
+  const file   = document.getElementById('ud-file').files[0];
+  const errEl  = document.getElementById('ud-error');
+  if (!client || !file) {
+    errEl.textContent = 'Veuillez sélectionner un client et un fichier.';
+    errEl.style.display = 'block'; return;
+  }
+  const btn = document.getElementById('ud-save-btn');
+  btn.disabled = true; btn.textContent = 'Upload en cours...';
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('nom_original', file.name);
+    fd.append('type', type);
+    fd.append('nom_client', client);
+    fd.append('commentaire', document.getElementById('ud-comment').value || '');
+    const r = await fetch('/api/documents', {method:'POST', body: fd, headers:{'Authorization':'Bearer '+(getToken()||'')}});
+    if (!r.ok) throw new Error(await r.text());
+    closeUploadDoc();
+    await loadBiblio();
+    showToast('Document ajouté avec succès');
+  } catch(err) {
+    showToast('Erreur : ' + err.message, 'error');
+    errEl.textContent = 'Erreur: ' + err.message;
+    errEl.style.display = 'block';
+  } finally { btn.disabled=false; btn.textContent='Uploader'; }
+}
+
+async function deleteDoc(id) {
+  if (!confirm('Supprimer ce document ? Cette action est irréversible.')) return;
+  try {
+    await api(`/api/documents/${id}`, {method:'DELETE'});
+    await loadBiblio();
+    showToast('Document supprimé');
+  } catch(err) { showToast('Erreur : ' + err.message, 'error'); }
+}
+
+// ─── PAYS & PRÉREQUIS ────────────────────────────────────────────────────────
+
+let allModeles = [];
+
+function switchPaysTab(tab) {
+  const isList = tab === 'list';
+  document.getElementById('pays-list-section').style.display = isList ? 'block' : 'none';
+  document.getElementById('pays-modeles-section').style.display = isList ? 'none' : 'block';
+  document.getElementById('pays-tab-list').style.background = isList ? 'var(--blue4)' : 'transparent';
+  document.getElementById('pays-tab-list').style.color = isList ? '#fff' : 'var(--text2)';
+  document.getElementById('pays-tab-modeles').style.background = isList ? 'transparent' : 'var(--blue4)';
+  document.getElementById('pays-tab-modeles').style.color = isList ? 'var(--text2)' : '#fff';
+  if (!isList && !allModeles.length) loadModeles();
+}
+
+async function loadPaysPage() {
+  try {
+    const pays = await api('/api/pays');
+    const ops  = await api('/api/operateurs');
+    // Refresh global cache so openEditPrereqs reads current prereqs
+    pays.forEach(p => { p._id = p._id?.$oid || p._id?.toString() || p._id; });
+    allPays = pays;
+    const body = document.getElementById('pays-body');
+    body.innerHTML = pays.map(p => {
+      const pOps = ops.filter(o => {
+        const opPaysId = o.pays_id?.$oid || o.pays_id?.toString() || o.pays_id;
+        return opPaysId === (p._id?.$oid || p._id?.toString() || p._id);
+      });
+      const prereqs = p.prereqs?.communs || [];
+      return `<div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rl);overflow:hidden;margin-bottom:10px;box-shadow:var(--shadow-sm)">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1.5px solid var(--border);background:var(--bg)">
+          <div style="font-size:22px">${getFlagEmoji(p.countryCode)}</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600">${p.nom}</div>
+            <div style="font-size:11px;color:var(--text3);font-weight:500">${p.indicatif||''} · ${pOps.length} opérateur${pOps.length>1?'s':''}</div>
+          </div>
+          ${window.__viewerMode ? '' : `<button onclick="openEditPrereqs('${p._id}',${JSON.stringify(p.nom).replace(/"/g,'&quot;')})" style="padding:5px 12px;font-size:11px;font-weight:600;border:1px solid var(--border2);border-radius:6px;background:var(--surface);color:var(--text2);cursor:pointer;font-family:var(--font)">Modifier pré-requis</button>`}
+        </div>
+        <div style="padding:10px 14px;display:flex;flex-direction:column;gap:5px">
+          ${pOps.map(o => `<div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:7px 10px;border-radius:6px;background:var(--bg);border:1px solid var(--border);font-size:12px">
+            <span style="font-weight:600">${o.nom}</span>
+            <span style="font-size:10px;color:var(--text3);font-family:var(--mono)">MCC: ${o.mcc||'—'} · MNC: ${o.mnc||'—'}</span>
+          </div>`).join('')}
+        </div>
+        ${prereqs.length ? `<div style="padding:10px 16px;border-top:1px solid var(--border);background:#FAFBFF">
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">Pré-requis communs</div>
+          ${prereqs.map(r => `<div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);margin-bottom:4px;font-weight:500"><div style="width:6px;height:6px;border-radius:50%;background:var(--blue4);flex-shrink:0"></div>${r}</div>`).join('')}
+        </div>` : `<div style="padding:10px 16px;border-top:1px solid var(--border);background:#FAFBFF;font-size:12px;color:var(--text3);font-weight:500">Aucun pré-requis renseigné — cliquez "Modifier pré-requis"</div>`}
+      </div>`;
+    }).join('');
+  } catch(err) { console.error(err); }
+}
+
+function getFlagEmoji(code) {
+  if (!code) return '🌍';
+  const flags = {SN:'🇸🇳',CI:'🇨🇮',CM:'🇨🇲',GH:'🇬🇭',BJ:'🇧🇯',ML:'🇲🇱',BF:'🇧🇫',GN:'🇬🇳',
+    NE:'🇳🇪',TG:'🇹🇬',MR:'🇲🇷',GM:'🇬🇲',GW:'🇬🇼',SL:'🇸🇱',LR:'🇱🇷',CV:'🇨🇻',
+    NG:'🇳🇬',TD:'🇹🇩',CF:'🇨🇫',GA:'🇬🇦',CG:'🇨🇬',CD:'🇨🇩',AO:'🇦🇴',ST:'🇸🇹',GQ:'🇬🇶'};
+  return flags[code.toUpperCase()] || '🌍';
+}
+
+let currentEditPaysId = null;
+
+function openEditPrereqs(paysId, paysNom) {
+  currentEditPaysId = paysId;
+  const pays = allPays.find(p => p._id === paysId);
+  const existing = Array.isArray(pays?.prereqs?.communs) ? pays.prereqs.communs : [];
+  const modal = document.createElement('div');
+  modal.id = 'prereqs-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;display:flex;align-items:center;justify-content:center;padding:1rem';
+  modal.innerHTML = `<div style="background:var(--surface);border-radius:var(--rl);width:100%;max-width:480px;overflow:hidden" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1.5px solid var(--border);background:var(--bg)">
+      <div style="font-size:15px;font-weight:600">Pré-requis — ${paysNom}</div>
+      <button onclick="document.getElementById('prereqs-modal').remove()" style="padding:5px 12px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font)">Fermer</button>
+    </div>
+    <div style="padding:20px">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px;font-weight:500">Pré-requis communs à tous les opérateurs de ${paysNom} :</div>
+      <div id="prereqs-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px">
+        ${existing.map((r,i) => `<div style="display:flex;gap:8px;align-items:center">
+          <input type="text" value="${r}" id="prereq-${i}" style="flex:1;padding:7px 10px;font-size:13px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font)"/>
+          <button onclick="this.parentElement.remove()" style="padding:5px 9px;font-size:11px;border:1px solid #FCA5A5;border-radius:5px;background:var(--red50);color:var(--red);cursor:pointer;font-family:var(--font)">✕</button>
+        </div>`).join('')}
+      </div>
+      <button onclick="addPrereqLine()" style="width:100%;padding:8px;font-size:12px;font-weight:600;border:2px dashed var(--border2);border-radius:var(--r);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font);margin-bottom:14px">+ Ajouter un pré-requis</button>
+      <div style="display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:12px">
+        <button onclick="document.getElementById('prereqs-modal').remove()" style="padding:8px 16px;font-size:13px;font-weight:500;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font)">Annuler</button>
+        <button onclick="savePrereqs('${paysId}')" style="padding:8px 18px;font-size:13px;font-weight:600;border:none;border-radius:var(--r);background:var(--blue4);color:#fff;cursor:pointer;font-family:var(--font)">Enregistrer</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+function addPrereqLine() {
+  const list = document.getElementById('prereqs-list');
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex;gap:8px;align-items:center';
+  div.innerHTML = `<input type="text" placeholder="Ex: RCCM valide" style="flex:1;padding:7px 10px;font-size:13px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font)"/>
+    <button onclick="this.parentElement.remove()" style="padding:5px 9px;font-size:11px;border:1px solid #FCA5A5;border-radius:5px;background:var(--red50);color:var(--red);cursor:pointer;font-family:var(--font)">✕</button>`;
+  list.appendChild(div);
+}
+
+async function savePrereqs(paysId) {
+  const inputs = document.querySelectorAll('#prereqs-list input[type="text"]');
+  const communs = [...inputs].map(i => i.value.trim()).filter(Boolean);
+  try {
+    await api(`/api/pays/${paysId}/prereqs`, {method:'PUT', body: JSON.stringify({communs})});
+    document.getElementById('prereqs-modal')?.remove();
+    loadPaysPage();
+    showToast('Pré-requis enregistrés');
+  } catch(err) { showToast('Erreur : ' + err.message, 'error'); }
+}
+
+// ─── MODÈLES ─────────────────────────────────────────────────────────────────
+
+async function loadModeles() {
+  try {
+    allModeles = await api('/api/modeles');
+    renderModeles();
+  } catch(err) { console.error(err); }
+}
+
+function renderModeles() {
+  const body = document.getElementById('modeles-body');
+  if (!allModeles.length) {
+    body.innerHTML = '<div class="loading">Aucun modèle — cliquez sur "+ Ajouter un modèle"</div>';
+    return;
+  }
+  body.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+    ${allModeles.map(m => `<div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rl);padding:14px;box-shadow:var(--shadow-sm)">
+      <div style="font-size:28px;margin-bottom:8px">${m.mimetype?.includes('pdf')?'📄':'📝'}</div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:3px">${m.nom}</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:3px;font-weight:500">${m.version||''} · ${formatSize(m.taille)}</div>
+      ${m.pays ? `<div style="font-size:11px;color:var(--text2);margin-bottom:3px">${m.pays}</div>` : ''}
+      ${m.description ? `<div style="font-size:11px;color:var(--text2);margin-bottom:8px">${m.description}</div>` : '<div style="margin-bottom:8px"></div>'}
+      <div style="display:flex;gap:5px">
+        <a href="${m.chemin}" download="${m.nom}" style="flex:1;padding:5px;font-size:11px;font-weight:600;border:1px solid var(--border2);border-radius:5px;background:var(--surface);color:var(--text2);cursor:pointer;text-decoration:none;font-family:var(--font);text-align:center">Télécharger</a>
+        ${window.__viewerMode ? '' : `<button onclick="deleteModele('${m._id}')" style="padding:5px 8px;font-size:11px;border:1px solid #FCA5A5;border-radius:5px;background:var(--red50);color:var(--red);cursor:pointer;font-family:var(--font)">✕</button>`}
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function openUploadModele() {
+  document.getElementById('upload-modele-overlay').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeUploadModele() {
+  document.getElementById('upload-modele-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+  document.getElementById('um-file').value = '';
+  document.getElementById('um-error').style.display = 'none';
+}
+
+async function saveModele() {
+  const nom  = document.getElementById('um-nom').value.trim();
+  const file = document.getElementById('um-file').files[0];
+  const errEl = document.getElementById('um-error');
+  if (!nom || !file) {
+    errEl.textContent = 'Veuillez renseigner le nom et choisir un fichier.';
+    errEl.style.display = 'block'; return;
+  }
+  const btn = document.getElementById('um-save-btn');
+  btn.disabled = true; btn.textContent = 'Upload en cours...';
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('nom', nom);
+    fd.append('description', document.getElementById('um-desc').value||'');
+    fd.append('version', document.getElementById('um-version').value||'v1.0');
+    fd.append('pays', document.getElementById('um-pays').value||'');
+    const r = await fetch('/api/modeles', {method:'POST', body: fd, headers:{'Authorization':'Bearer '+(getToken()||'')}});
+    if (!r.ok) throw new Error(await r.text());
+    closeUploadModele();
+    await loadModeles();
+    showToast('Modèle ajouté avec succès');
+  } catch(err) {
+    showToast('Erreur : ' + err.message, 'error');
+    errEl.textContent = 'Erreur: ' + err.message;
+    errEl.style.display = 'block';
+  } finally { btn.disabled=false; btn.textContent='Uploader'; }
+}
+
+async function deleteModele(id) {
+  if (!confirm('Supprimer ce modèle ?')) return;
+  try {
+    await api(`/api/modeles/${id}`, {method:'DELETE'});
+    await loadModeles();
+    showToast('Modèle supprimé');
+  } catch(err) { showToast('Erreur : ' + err.message, 'error'); }
+}
+
+// ─── LOOKUP ──────────────────────────────────────────────────────────────────
+
+function getLookupStatusDot(statut) {
+  if (statut === 'Approuvé') return `<div style="width:28px;height:28px;border-radius:50%;background:var(--green50);border:2px solid var(--greena);display:flex;align-items:center;justify-content:center;margin:0 auto"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="var(--green4)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 6.5 5 10 11 3"/></svg></div><div style="font-size:9px;color:var(--green4);margin-top:3px;font-weight:600;text-align:center">Onnet</div>`;
+  if (statut === 'Approuvé Offnet') return `<div style="width:28px;height:28px;border-radius:50%;background:#E1F5EE;border:2px solid #5DCAA5;display:flex;align-items:center;justify-content:center;margin:0 auto"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="#1D9E75" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 6.5 5 10 11 3"/></svg></div><div style="font-size:9px;color:#1D9E75;margin-top:3px;font-weight:600;text-align:center">Offnet</div>`;
+  if (statut === 'Approuvé Partiel') return `<div style="width:28px;height:28px;border-radius:50%;background:#FFF8E6;border:2px solid var(--amber4);display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:11px;font-weight:700;color:var(--amber4)">~</div><div style="font-size:9px;color:var(--amber4);margin-top:3px;font-weight:600;text-align:center">Partiel</div>`;
+  if (statut === 'Rejeté') return `<div style="width:28px;height:28px;border-radius:50%;background:var(--red50);border:2px solid var(--red4);display:flex;align-items:center;justify-content:center;margin:0 auto"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="var(--red4)" stroke-width="2.5" stroke-linecap="round"><line x1="2" y1="2" x2="10" y2="10"/><line x1="10" y1="2" x2="2" y2="10"/></svg></div><div style="font-size:9px;color:var(--red4);margin-top:3px;font-weight:600;text-align:center">Rejeté</div>`;
+  if (['En cours de traitement',"En attente d'info",'Collecte interne','Suspendu'].includes(statut)) return `<div style="width:28px;height:28px;border-radius:50%;background:var(--blue50);border:2px solid var(--blueb);display:flex;align-items:center;justify-content:center;margin:0 auto"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="var(--blue4)" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="5" r="3"/></svg></div><div style="font-size:9px;color:var(--blue4);margin-top:3px;font-weight:600;text-align:center">En cours</div>`;
+  return `<div style="width:28px;height:28px;border-radius:50%;background:var(--gray50);border:2px dashed var(--border2);display:flex;align-items:center;justify-content:center;margin:0 auto;color:var(--text3);font-size:14px">—</div><div style="font-size:9px;color:var(--text3);margin-top:3px;font-weight:600;text-align:center">N/A</div>`;
+}
+
+function getDelaiLabel(e) {
+  if (!e.date_soumission) return '<span style="font-size:11px;color:var(--text3)">—</span>';
+  // Find latest approval date among operators
+  const approvedDates = (e.operateurs||[])
+    .filter(o => ['Approuvé','Approuvé Offnet','Approuvé Partiel'].includes(o.statut) && o.date_approbation)
+    .map(o => new Date(o.date_approbation));
+  if (!approvedDates.length) return '<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:var(--blue50);color:var(--blue4);border:1.5px solid var(--blueb);font-weight:600">En cours</span>';
+  const latest = new Date(Math.max(...approvedDates));
+  const sub = new Date(e.date_soumission);
+  const days = Math.round((latest - sub) / (1000*60*60*24));
+  if (days <= 15) return `<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:var(--green50);color:var(--green4);border:1.5px solid var(--greena);font-weight:600">${days} jours</span>`;
+  if (days <= 30) return `<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:var(--amber50);color:var(--amber);border:1.5px solid var(--amber4);font-weight:600">${days} jours</span>`;
+  return `<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:var(--red50);color:var(--red);border:1.5px solid var(--red4);font-weight:600">${days} jours</span>`;
+}
+
+async function loadLookup() {
+  try {
+    // Populate pays filter
+    const lkPays = document.getElementById('lk-pays');
+    if (lkPays.options.length === 1) {
+      allPays.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p._id;
+        opt.textContent = p.nom;
+        lkPays.appendChild(opt);
+      });
+    }
+    // Compute stats
+    const total = allSenderIds.length;
+    const clients = new Set(allSenderIds.map(e => e.nom_client)).size;
+    const totalOps = allSenderIds.reduce((acc, e) => acc + (e.operateurs||[]).length, 0);
+    const approvedOps = allSenderIds.reduce((acc, e) =>
+      acc + (e.operateurs||[]).filter(o => ['Approuvé','Approuvé Offnet','Approuvé Partiel'].includes(o.statut)).length, 0);
+    const rate = totalOps ? Math.round(approvedOps / totalOps * 100) : 0;
+
+    // Avg delay
+    const delays = [];
+    allSenderIds.forEach(e => {
+      if (!e.date_soumission) return;
+      const approvedDates = (e.operateurs||[])
+        .filter(o => ['Approuvé','Approuvé Offnet','Approuvé Partiel'].includes(o.statut) && o.date_approbation)
+        .map(o => new Date(o.date_approbation));
+      if (!approvedDates.length) return;
+      const latest = new Date(Math.max(...approvedDates));
+      const days = Math.round((latest - new Date(e.date_soumission)) / (1000*60*60*24));
+      if (days >= 0) delays.push(days);
+    });
+    const avgDelay = delays.length ? Math.round(delays.reduce((a,b)=>a+b,0)/delays.length) : null;
+
+    document.getElementById('lk-clients').textContent = clients;
+    document.getElementById('lk-sids').textContent = total;
+    document.getElementById('lk-rate').textContent = rate + '%';
+    document.getElementById('lk-delay').textContent = avgDelay ? avgDelay + 'j' : '—';
+
+    renderLookup();
+  } catch(err) { console.error(err); }
+}
+
+function renderLookup() {
+  const q = (document.getElementById('lk-search')?.value || '').toLowerCase();
+  const paysFilter = document.getElementById('lk-pays')?.value || '';
+  const statutFilter = document.getElementById('lk-statut')?.value || '';
+  const APPROVED = ['Approuvé','Approuvé Offnet','Approuvé Partiel'];
+
+  let data = allSenderIds.filter(e => {
+    if (q && !(e.nom_client+e.sender_id).toLowerCase().includes(q)) return false;
+    if (paysFilter) {
+      const pid = e.pays_id?.$oid || e.pays_id?.toString() || e.pays_id;
+      if (pid !== paysFilter) return false;
+    }
+    if (statutFilter === 'approved' && !isFullyApproved(e)) return false;
+    if (statutFilter === 'inprogress' && isFullyApproved(e)) return false;
+    if (statutFilter === 'rejected' && !(e.operateurs||[]).some(o=>o.statut==='Rejeté')) return false;
+    return true;
+  });
+
+  // Group by client
+  const byClient = {};
+  data.forEach(e => {
+    if (!byClient[e.nom_client]) byClient[e.nom_client] = [];
+    byClient[e.nom_client].push(e);
+  });
+
+  const body = document.getElementById('lookup-body');
+  if (!Object.keys(byClient).length) {
+    body.innerHTML = '<div class="loading">Aucun résultat</div>';
+    return;
+  }
+
+  body.innerHTML = Object.entries(byClient).map(([client, senders]) => {
+    // Get operators for the pays of first sender
+    const firstSender = senders[0];
+    const paysId = firstSender.pays_id?.$oid || firstSender.pays_id?.toString() || firstSender.pays_id;
+    const pays = allPays.find(p => p._id === paysId);
+    const flag = pays ? getFlagEmoji(pays.countryCode) : '🌍';
+    const paysNom = firstSender.pays_nom || pays?.nom || '—';
+
+    // Collect all unique operators across all senders for this client
+    const opsMap = {};
+    senders.forEach(e => {
+      (e.operateurs||[]).forEach(o => { opsMap[o.nom] = true; });
+    });
+    const opNames = Object.keys(opsMap);
+
+    // Client status badge
+    const allApproved = senders.every(e => isFullyApproved(e));
+    const hasRejected = senders.some(e => (e.operateurs||[]).some(o=>o.statut==='Rejeté'));
+    const statusBadge = allApproved
+      ? '<span class="badge b-ok">Tous approuvés</span>'
+      : hasRejected
+        ? '<span class="badge b-rej">Rejeté partiel</span>'
+        : '<span class="badge b-proc">En cours</span>';
+    const notifBadge = senders.every(e => e.notifie)
+      ? '<span style="font-size:10px;color:var(--text3);background:var(--bg);border:1.5px solid var(--border);padding:2px 9px;border-radius:20px;font-weight:600;margin-left:6px">✓ Client informé</span>'
+      : '';
+
+    const headers = opNames.map(n => `<th style="text-align:center;padding:9px 10px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;border-bottom:1.5px solid var(--border);background:var(--bg);white-space:nowrap">${n}</th>`).join('');
+
+    const rows = senders.map(e => {
+      const dateSub = e.date_soumission ? new Date(e.date_soumission).toLocaleDateString('fr-FR') : '—';
+      const dateVal = (e.operateurs||[]).filter(o=>APPROVED.includes(o.statut)&&o.date_approbation).length
+        ? new Date(Math.max(...(e.operateurs||[]).filter(o=>APPROVED.includes(o.statut)&&o.date_approbation).map(o=>new Date(o.date_approbation)))).toLocaleDateString('fr-FR')
+        : '—';
+      const opCells = opNames.map(n => {
+        const op = (e.operateurs||[]).find(o => o.nom === n);
+        return `<td style="text-align:center;padding:8px 10px;border-bottom:1.5px solid var(--border)">${op ? getLookupStatusDot(op.statut) : getLookupStatusDot(null)}</td>`;
+      }).join('');
+      return `<tr>
+        <td style="padding:10px 14px;border-bottom:1.5px solid var(--border);vertical-align:middle">
+          <div style="font-family:var(--mono);font-size:13px;font-weight:600">${e.sender_id}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px">${flag} ${paysNom}</div>
+        </td>
+        ${opCells}
+        <td style="padding:8px 10px;border-bottom:1.5px solid var(--border);text-align:center">${getDelaiLabel(e)}</td>
+        <td style="padding:8px 14px;border-bottom:1.5px solid var(--border);font-size:11px;color:var(--text2)">${dateSub}</td>
+        <td style="padding:8px 14px;border-bottom:1.5px solid var(--border);font-size:11px;color:var(--text2)">${dateVal}</td>
+      </tr>`;
+    }).join('');
+
+    const ticket = firstSender.url_ticket
+      ? `<a href="${firstSender.url_ticket}" target="_blank" style="font-size:11px;color:var(--blue4);text-decoration:none;border-bottom:1px dashed var(--blue4)">${firstSender.numero_ticket||'Voir ticket'}</a>`
+      : firstSender.numero_ticket ? `<span style="font-size:11px;color:var(--text3)">${firstSender.numero_ticket}</span>` : '';
+
+    return `<div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rl);margin-bottom:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:var(--bg);border-bottom:1.5px solid var(--border)">
+        <div>
+          <div style="font-size:15px;font-weight:700">${client}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;font-weight:500">${senders.length} Sender ID${senders.length>1?'s':''} · ${paysNom} ${ticket ? '· ' + ticket : ''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">${statusBadge}${notifBadge}</div>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr>
+            <th style="text-align:left;padding:9px 14px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;border-bottom:1.5px solid var(--border);background:var(--bg);width:150px">Sender ID</th>
+            ${headers}
+            <th style="text-align:center;padding:9px 10px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;border-bottom:1.5px solid var(--border);background:var(--bg);white-space:nowrap">Délai</th>
+            <th style="text-align:left;padding:9px 14px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;border-bottom:1.5px solid var(--border);background:var(--bg)">Soumission</th>
+            <th style="text-align:left;padding:9px 14px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;border-bottom:1.5px solid var(--border);background:var(--bg)">Validation</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <div style="display:flex;gap:14px;align-items:center;padding:8px 18px;background:var(--bg);border-top:1.5px solid var(--border);flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2);font-weight:500"><div style="width:14px;height:14px;border-radius:50%;background:var(--green50);border:2px solid var(--greena)"></div>Onnet</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2);font-weight:500"><div style="width:14px;height:14px;border-radius:50%;background:#E1F5EE;border:2px solid #5DCAA5"></div>Offnet</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2);font-weight:500"><div style="width:14px;height:14px;border-radius:50%;background:#FFF8E6;border:2px solid var(--amber4)"></div>Partiel</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2);font-weight:500"><div style="width:14px;height:14px;border-radius:50%;background:var(--blue50);border:2px solid var(--blueb)"></div>En cours</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2);font-weight:500"><div style="width:14px;height:14px;border-radius:50%;background:var(--red50);border:2px solid var(--red4)"></div>Rejeté</div>
+        <div style="margin-left:auto;display:flex;gap:6px">
+          <span style="font-size:10px;padding:2px 7px;border-radius:20px;background:var(--green50);color:var(--green4);border:1.5px solid var(--greena);font-weight:600">≤15j</span>
+          <span style="font-size:10px;padding:2px 7px;border-radius:20px;background:var(--amber50);color:var(--amber);border:1.5px solid var(--amber4);font-weight:600">15-30j</span>
+          <span style="font-size:10px;padding:2px 7px;border-radius:20px;background:var(--red50);color:var(--red);border:1.5px solid var(--red4);font-weight:600">&gt;30j</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+
+function openEdit(id) {
+  const e = allSenderIds.find(x => x._id === id);
+  if (!e) return;
+  document.getElementById('edit-id').value = id;
+  document.getElementById('edit-subtitle').textContent = e.nom_client + ' — ' + e.sender_id;
+  document.getElementById('edit-client').value = e.nom_client || '';
+  document.getElementById('edit-sid').value = e.sender_id || '';
+  document.getElementById('edit-ticket').value = e.numero_ticket || '';
+  document.getElementById('edit-url').value = e.url_ticket || '';
+  document.getElementById('edit-comm').value = e.commentaires || '';
+
+  // Dates
+  if (e.date_demande) {
+    const d = new Date(e.date_demande);
+    document.getElementById('edit-ddem').value = d.toISOString().slice(0,10);
+  }
+  if (e.date_soumission) {
+    const d = new Date(e.date_soumission);
+    document.getElementById('edit-dsub').value = d.toISOString().slice(0,10);
+  }
+
+  // Operateurs
+  document.getElementById('edit-ops').innerHTML = (e.operateurs||[]).map((o,i) => {
+    const appDate = o.date_approbation ? new Date(o.date_approbation).toISOString().slice(0,10) : '';
+    return `<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;display:grid;grid-template-columns:1fr 160px 130px;gap:8px;align-items:center">
+      <div style="font-size:12px;font-weight:500">${o.nom}</div>
+      <select id="edit-op-statut-${i}" class="inline-sel ${getBadgeClass(o.statut)}"
+        onchange="this.className='inline-sel '+getBadgeClass(this.value)"
+        style="font-size:11px;padding:4px 8px;border-radius:4px;border:1px solid var(--border2);cursor:pointer;font-family:var(--font)">
+        ${STATUTS.map(s => `<option value="${s.v}" ${s.v===o.statut?'selected':''}>${s.v}</option>`).join('')}
+      </select>
+      <div class="field" style="gap:2px">
+        <label style="font-size:10px">Date approbation</label>
+        <input type="date" id="edit-op-appro-${i}" value="${appDate}" style="padding:4px 6px;font-size:11px;border:1px solid var(--border2);border-radius:5px;font-family:var(--font)"/>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('edit-overlay').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeEdit() {
+  document.getElementById('edit-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+async function saveEdit() {
+  const id = document.getElementById('edit-id').value;
+  const e = allSenderIds.find(x => x._id === id);
+  if (!e) return;
+  const btn = document.getElementById('edit-save-btn');
+  btn.disabled = true; btn.textContent = 'Enregistrement...';
+
+  const operateurs = (e.operateurs||[]).map((o,i) => ({
+    operateur_id: o.operateur_id?.$oid || o.operateur_id?.toString() || o.operateur_id,
+    nom: o.nom,
+    statut: document.getElementById(`edit-op-statut-${i}`)?.value || o.statut,
+    date_approbation: document.getElementById(`edit-op-appro-${i}`)?.value || null
+  }));
+
+  try {
+    await api(`/api/sender-ids/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        nom_client:      document.getElementById('edit-client').value.trim(),
+        sender_id:       document.getElementById('edit-sid').value.trim(),
+        numero_ticket:   document.getElementById('edit-ticket').value.trim(),
+        url_ticket:      document.getElementById('edit-url').value.trim(),
+        commentaires:    document.getElementById('edit-comm').value.trim(),
+        date_demande:    document.getElementById('edit-ddem').value || null,
+        date_soumission: document.getElementById('edit-dsub').value || null,
+        operateurs
+      })
+    });
+    // Update local data
+    Object.assign(e, {
+      nom_client:      document.getElementById('edit-client').value.trim(),
+      sender_id:       document.getElementById('edit-sid').value.trim(),
+      numero_ticket:   document.getElementById('edit-ticket').value.trim(),
+      url_ticket:      document.getElementById('edit-url').value.trim(),
+      commentaires:    document.getElementById('edit-comm').value.trim(),
+      date_demande:    document.getElementById('edit-ddem').value || null,
+      date_soumission: document.getElementById('edit-dsub').value || null,
+      operateurs
+    });
+    filteredSenderIds = [...allSenderIds];
+    updateTabDot();
+    renderList();
+    renderNotifyAlerts();
+    closeEdit();
+    showToast('Modifications enregistrées');
+  } catch(err) {
+    showToast('Erreur : ' + err.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Enregistrer les modifications';
+  }
+}
+
+// ─── EXPORT ──────────────────────────────────────────────────────────────────
+
+function exportCSV() {
+  const rows = [
+    ['Client','Sender ID','Pays','Opérateur','Statut','Date demande','Ticket','Notifié']
+  ];
+  filteredSenderIds.forEach(e => {
+    (e.operateurs||[]).forEach(o => {
+      rows.push([
+        e.nom_client, e.sender_id, e.pays_nom||'',
+        o.nom, o.statut,
+        e.date_demande ? new Date(e.date_demande).toLocaleDateString('fr-FR') : '',
+        e.numero_ticket||'',
+        e.notifie ? 'Oui' : 'Non'
+      ]);
+    });
+  });
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `sender_ids_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function exportExcel() {
+  const rows = [
+    ['Client','Sender ID','Pays','Opérateur','Statut','Date demande','Date approbation','Ticket','URL Ticket','Notifié','Date notification']
+  ];
+  filteredSenderIds.forEach(e => {
+    (e.operateurs||[]).forEach(o => {
+      rows.push([
+        e.nom_client, e.sender_id, e.pays_nom||'',
+        o.nom, o.statut,
+        e.date_demande ? new Date(e.date_demande).toLocaleDateString('fr-FR') : '',
+        o.date_approbation ? new Date(o.date_approbation).toLocaleDateString('fr-FR') : '',
+        e.numero_ticket||'', e.url_ticket||'',
+        e.notifie ? 'Oui' : 'Non',
+        e.date_notification ? new Date(e.date_notification).toLocaleDateString('fr-FR') : ''
+      ]);
+    });
+  });
+  // Build HTML table for Excel
+  const html = '<html><head><meta charset="utf-8"/></head><body><table>' +
+    rows.map(r => '<tr>' + r.map(v => `<td>${v}</td>`).join('') + '</tr>').join('') +
+    '</table></body></html>';
+  const blob = new Blob([html], {type:'application/vnd.ms-excel;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `sender_ids_${new Date().toISOString().slice(0,10)}.xls`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// ─── DETAIL ───────────────────────────────────────────────────────────────────
+
+function openDetail(id) {
+  const e = allSenderIds.find(x => x._id === id);
+  if (!e) return;
+  document.getElementById('detail-title').textContent = e.nom_client;
+  document.getElementById('detail-sid').textContent = e.sender_id;
+  document.getElementById('detail-pays').textContent = e.pays_nom || '—';
+  document.getElementById('detail-ticket').textContent = e.numero_ticket || '—';
+  document.getElementById('detail-date-dem').textContent = e.date_demande ? new Date(e.date_demande).toLocaleDateString('fr-FR') : '—';
+  document.getElementById('detail-date-sub').textContent = e.date_soumission ? new Date(e.date_soumission).toLocaleDateString('fr-FR') : '—';
+  
+  const urlDiv = document.getElementById('detail-url');
+  if (e.url_ticket) {
+    urlDiv.style.display = 'block';
+    const link = document.getElementById('detail-url-link');
+    link.href = e.url_ticket; link.textContent = e.url_ticket;
+  } else { urlDiv.style.display = 'none'; }
+  
+  const commDiv = document.getElementById('detail-comm');
+  if (e.commentaires) {
+    commDiv.style.display = 'block';
+    document.getElementById('detail-comm-text').textContent = e.commentaires;
+  } else { commDiv.style.display = 'none'; }
+
+  document.getElementById('detail-ops').innerHTML = (e.operateurs||[]).map(o => {
+    const appDate = o.date_approbation ? new Date(o.date_approbation).toLocaleDateString('fr-FR') : null;
+    return `<div style="display:grid;grid-template-columns:1fr 140px 130px;gap:8px;align-items:center;padding:8px 12px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg)">
+      <div>
+        <div style="font-size:12px;font-weight:500">${o.nom}</div>
+        <div style="font-size:10px;color:var(--text3);font-family:var(--mono)">MCC/MNC</div>
+      </div>
+      <span class="badge ${getBadgeClass(o.statut)}">${o.statut}</span>
+      <div style="font-size:11px;color:var(--text2)">
+        ${appDate ? `<div>Approb: ${appDate}</div>` : '<div style="color:var(--text3)">Pas encore approuvé</div>'}
+      </div>
+    </div>`;
+  }).join('');
+
+  const notifEl = document.getElementById('detail-notif');
+  if (e.notifie) {
+    const d = e.date_notification ? new Date(e.date_notification).toLocaleDateString('fr-FR') : '';
+    notifEl.innerHTML = `<span class="notify-pill notified-pill">✓ Client informé${d?' le '+d:''}</span>`;
+  } else if (isFullyApproved(e)) {
+    notifEl.innerHTML = `<span class="notify-pill" onclick="notifyClient('${e._id}',this);closeDetail()">● À notifier</span>`;
+  } else {
+    notifEl.innerHTML = '<span style="font-size:12px;color:var(--text3)">Validation en cours</span>';
+  }
+
+  document.getElementById('detail-overlay').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDetail() {
+  document.getElementById('detail-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+
+// ─── AUTH UI ──────────────────────────────────────────────────────────────────
+
+function goToLogin() { clearToken(); window.location.href = '/login.html'; }
+
+function logout() { goToLogin(); }
+
+function applyUserUI(user) {
+  document.getElementById('user-bar').style.display = 'flex';
+  document.getElementById('user-name-display').textContent = user.nom;
+  const roleLabels = { admin: 'Admin', user: 'Utilisateur', viewer: 'Lecteur' };
+  document.getElementById('user-role-badge').textContent = roleLabels[user.role] || user.role;
+
+  if (user.role === 'admin') document.getElementById('tab-admin').style.display = '';
+  if (user.role === 'viewer') {
+    window.__viewerMode = true;
+    document.getElementById('tab-form').style.display = 'none';
+    ['btn-add-doc','btn-add-modele'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+  }
+}
+
+async function checkAuth() {
+  const token = getToken();
+  if (!token) { goToLogin(); return false; }
+  try {
+    const res = await fetch('/api/auth/me', { headers:{'Authorization':'Bearer '+token} });
+    if (!res.ok) { goToLogin(); return false; }
+    const { user } = await res.json();
+    saveUser(user);
+    applyUserUI(user);
+    return true;
+  } catch { goToLogin(); return false; }
+}
+
+// ─── ADMIN ────────────────────────────────────────────────────────────────────
+
+async function loadAdminUsers() {
+  const el = document.getElementById('admin-users-list');
+  el.innerHTML = '<div class="loading">Chargement...</div>';
+  try {
+    const users = await api('/api/admin/users');
+    if (!users.length) { el.innerHTML = '<div class="loading">Aucun utilisateur</div>'; return; }
+    el.innerHTML = `<table>
+      <thead><tr><th>Nom</th><th>Email</th><th>Rôle</th><th>Statut</th><th style="text-align:right">Actions</th></tr></thead>
+      <tbody>${users.map(u => `<tr>
+        <td><strong>${u.nom}</strong></td>
+        <td class="td-m" style="font-family:var(--mono);font-size:12px">${u.email}</td>
+        <td><span class="badge ${u.role==='admin'?'b-blue':'b-gray'}">${u.role}</span></td>
+        <td><span class="badge ${u.actif?'b-ok':'b-rej'}">${u.actif?'Actif':'Inactif'}</span></td>
+        <td style="text-align:right;white-space:nowrap">
+          <button onclick="toggleUser('${u._id}',${!u.actif})" class="btn btn-ghost" style="font-size:11px;padding:4px 10px">${u.actif?'Désactiver':'Activer'}</button>
+          <button onclick="resendInvite('${u._id}')" class="btn btn-ghost" style="font-size:11px;padding:4px 10px">Ré-inviter</button>
+          <button onclick="deleteUser('${u._id}')" class="btn btn-ghost" style="font-size:11px;padding:4px 10px;color:var(--red4)">Supprimer</button>
+        </td>
+      </tr>`).join('')}</tbody></table>`;
+  } catch(e) { el.innerHTML = `<div class="error-msg">${e.message}</div>`; }
+}
+
+async function inviteUser() {
+  const email = document.getElementById('inv-email').value.trim();
+  const nom   = document.getElementById('inv-nom').value.trim();
+  const role  = document.getElementById('inv-role').value;
+  const errEl = document.getElementById('inv-err');
+  errEl.style.cssText = '';
+  errEl.style.display = 'none';
+  if (!email || !nom) { errEl.textContent = 'Email et nom requis'; errEl.style.display = 'block'; return; }
+  const btn = document.getElementById('inv-btn');
+  btn.disabled = true; btn.textContent = 'Envoi...';
+  try {
+    await api('/api/admin/invite', { method:'POST', body: JSON.stringify({ email, nom, role }) });
+    document.getElementById('inv-email').value = '';
+    document.getElementById('inv-nom').value   = '';
+    await loadAdminUsers();
+    showToast(`Invitation envoyée à ${email}`);
+  } catch(e) { showToast(e.message, 'error'); errEl.textContent = e.message; errEl.style.display = 'block'; }
+  finally { btn.disabled = false; btn.textContent = 'Inviter par email'; }
+}
+
+async function toggleUser(id, actif) {
+  try {
+    await api(`/api/admin/users/${id}`, { method:'PUT', body: JSON.stringify({ actif }) });
+    await loadAdminUsers();
+    showToast(actif ? 'Utilisateur activé' : 'Utilisateur désactivé');
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function resendInvite(id) {
+  if (!confirm('Renvoyer l\'invitation par email ?')) return;
+  try { await api(`/api/admin/invite/${id}/resend`, { method:'POST' }); alert('Invitation renvoyée !'); }
+  catch(e) { alert(e.message); }
+}
+
+async function deleteUser(id) {
+  if (!confirm('Supprimer cet utilisateur ? Cette action est irréversible.')) return;
+  try { await api(`/api/admin/users/${id}`, { method:'DELETE' }); await loadAdminUsers(); }
+  catch(e) { alert(e.message); }
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+
+(async function init() {
+  const ok = await checkAuth();
+  if (!ok) return;
+  await loadPays();
+  await loadSenderIds();
+  addSenderBlock();
+})();
+</script>
+  </div><!-- /.content -->
+</body>
+</html>

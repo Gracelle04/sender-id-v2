@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Connexion — Suivi Sender ID</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=DM+Sans:wght@400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F5F4F0;--surface:#fff;--border:#D5D2C8;--border2:#B8B4A8;
+  --text:#1C1C1A;--text2:#6B6963;--text3:#9C9890;
+  --blue:#0C447C;--blue4:#378ADD;--blueb:#85B7EB;--blue50:#E6F1FB;
+  --green:#27500A;--green4:#639922;--greena:#97C459;--green50:#EAF3DE;
+  --red:#791F1F;--red4:#E24B4A;--red50:#FCEBEB;
+  --r:10px;--font:'DM Sans',sans-serif;--mono:'IBM Plex Mono',monospace;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font);
+  height: 100vh;
+  background: #f0eeeb url('/login-bg.png') center center / cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 24px;
+  padding-right: 12%;
+}
+
+.login-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 380px;
+}
+
+.login-logo {
+  width: 140px;
+  height: auto;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.15));
+}
+
+/* ── Login card — floats inside the right decorative box ── */
+.card {
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1.5px solid rgba(255,255,255,0.6);
+  border-radius: 18px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.card-header {
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1.5px solid var(--border);
+}
+.card-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-bottom: 6px;
+}
+.card-heading {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -.02em;
+  line-height: 1.2;
+}
+.card-sub {
+  font-size: 13px;
+  color: var(--text2);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+.field { display:flex; flex-direction:column; gap:5px; margin-bottom:14px }
+.field label { font-size:11px; font-weight:600; color:var(--text2); text-transform:uppercase; letter-spacing:.06em }
+.field input {
+  padding: 11px 13px;
+  font-size: 14px;
+  border: 1.5px solid var(--border2);
+  border-radius: var(--r);
+  background: #fff;
+  color: var(--text);
+  font-family: var(--font);
+  outline: none;
+  transition: border-color .15s;
+}
+.field input:focus { border-color: var(--blue4); box-shadow: 0 0 0 3px rgba(55,138,221,.1) }
+
+.btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--r);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all .15s;
+  margin-top: 4px;
+}
+.btn-primary { background: var(--blue); color: #fff }
+.btn-primary:hover { background: #0A3A6A }
+.btn-primary:disabled { background: var(--text3); cursor: not-allowed }
+.btn-ghost {
+  background: transparent;
+  color: var(--text2);
+  border: 1.5px solid var(--border2);
+  margin-top: 8px;
+}
+.btn-ghost:hover { background: var(--bg) }
+
+.error {
+  padding: 10px 13px;
+  background: var(--red50);
+  border: 1.5px solid #FCA5A5;
+  border-radius: var(--r);
+  font-size: 13px;
+  color: var(--red);
+  margin-bottom: 14px;
+  display: none;
+}
+
+.step { display: none }
+.step.active { display: block }
+
+.otp-input {
+  font-family: var(--mono) !important;
+  font-size: 28px !important;
+  font-weight: 500;
+  letter-spacing: 10px;
+  text-align: center;
+  padding: 14px 13px !important;
+}
+.otp-info {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text2);
+  margin-bottom: 20px;
+  padding: 12px 14px;
+  background: var(--blue50);
+  border-radius: var(--r);
+  border: 1.5px solid var(--blueb);
+  line-height: 1.5;
+}
+.otp-email {
+  font-weight: 700;
+  color: var(--blue);
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  word-break: break-all;
+}
+.timer { font-size: 11px; color: var(--text3); text-align: center; margin-top: 12px }
+.resend-btn {
+  background: none; border: none; color: var(--blue4);
+  font-size: 12px; cursor: pointer; font-family: var(--font);
+  text-decoration: underline; padding: 0;
+}
+.resend-btn:disabled { color: var(--text3); cursor: default; text-decoration: none }
+
+/* ── Mobile ── */
+@media (max-width: 640px) {
+  body {
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    background-position: left center;
+    overflow: hidden;
+  }
+  .card { max-width: 100%; padding: 28px 20px; max-height: calc(100vh - 32px); overflow-y: auto }
+}
+</style>
+</head>
+<body>
+
+<div class="login-wrapper">
+<img src="/lamlogo.png" alt="LAM Logo" class="login-logo"/>
+<div class="card">
+  <div class="card-header">
+    <div class="card-title">Suivi Sender ID</div>
+    <div class="card-heading">Afrique Ouest &amp; Centrale</div>
+    <div class="card-sub">Connectez-vous pour accéder à l'application.</div>
+  </div>
+
+  <!-- STEP 1 — Email + password -->
+  <div class="step active" id="step1">
+    <div id="err1" class="error"></div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="inp-email" placeholder="votre@email.com" autocomplete="email"/>
+    </div>
+    <div class="field">
+      <label>Mot de passe</label>
+      <input type="password" id="inp-pwd" placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+    <button class="btn btn-primary" id="btn-login" onclick="submitLogin()">Continuer →</button>
+  </div>
+
+  <!-- STEP 2 — OTP -->
+  <div class="step" id="step2">
+    <div class="otp-info">
+      Code envoyé à
+      <span class="otp-email" id="otp-email-display"></span>
+    </div>
+    <div id="err2" class="error"></div>
+    <div class="field">
+      <label>Code OTP (6 chiffres)</label>
+      <input type="text" id="inp-otp" class="otp-input" placeholder="······" maxlength="6" inputmode="numeric" autocomplete="one-time-code"/>
+    </div>
+    <button class="btn btn-primary" id="btn-verify" onclick="submitOTP()">Vérifier →</button>
+    <button class="btn btn-ghost" onclick="goBack()">← Retour</button>
+    <div class="timer" id="timer-zone"></div>
+  </div>
+</div>
+</div>
+
+<script>
+let currentEmail = '';
+let timerInterval = null;
+
+const showErr = (n, msg) => { const el = document.getElementById('err'+n); el.textContent = msg; el.style.display = 'block'; };
+const hideErr = n => document.getElementById('err'+n).style.display = 'none';
+
+async function submitLogin() {
+  hideErr(1);
+  const email    = document.getElementById('inp-email').value.trim();
+  const password = document.getElementById('inp-pwd').value;
+  if (!email || !password) return showErr(1, 'Veuillez remplir tous les champs.');
+  const btn = document.getElementById('btn-login');
+  btn.disabled = true; btn.textContent = 'Envoi du code...';
+  try {
+    const r = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email, password})
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error);
+    currentEmail = data.email;
+    document.getElementById('otp-email-display').textContent = currentEmail;
+    document.getElementById('step1').classList.remove('active');
+    document.getElementById('step2').classList.add('active');
+    document.getElementById('inp-otp').value = '';
+    document.getElementById('inp-otp').focus();
+    startTimer(600);
+  } catch(e) { showErr(1, e.message); }
+  finally { btn.disabled = false; btn.textContent = 'Continuer →'; }
+}
+
+async function submitOTP() {
+  hideErr(2);
+  const otp = document.getElementById('inp-otp').value.trim();
+  if (otp.length !== 6) return showErr(2, 'Le code doit contenir 6 chiffres.');
+  const btn = document.getElementById('btn-verify');
+  btn.disabled = true; btn.textContent = 'Vérification...';
+  try {
+    const r = await fetch('/api/auth/verify-otp', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email: currentEmail, otp})
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error);
+    localStorage.setItem('sid_token', data.token);
+    localStorage.setItem('sid_user', JSON.stringify(data.user));
+    clearInterval(timerInterval);
+    window.location.href = '/';
+  } catch(e) { showErr(2, e.message); }
+  finally { btn.disabled = false; btn.textContent = 'Vérifier →'; }
+}
+
+function goBack() {
+  clearInterval(timerInterval);
+  document.getElementById('step2').classList.remove('active');
+  document.getElementById('step1').classList.add('active');
+  hideErr(1); hideErr(2);
+}
+
+function startTimer(seconds) {
+  clearInterval(timerInterval);
+  const zone = document.getElementById('timer-zone');
+  let rem = seconds;
+  const tick = () => {
+    const m = Math.floor(rem/60), s = rem%60;
+    zone.innerHTML = `Code valide encore ${m}:${String(s).padStart(2,'0')} — <button class="resend-btn" onclick="goBack()" ${rem>540?'disabled':''}>Renvoyer</button>`;
+    if (rem <= 0) {
+      clearInterval(timerInterval);
+      zone.innerHTML = 'Code expiré — <button class="resend-btn" onclick="goBack()">Recommencer</button>';
+    }
+    rem--;
+  };
+  tick();
+  timerInterval = setInterval(tick, 1000);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (document.getElementById('step1').classList.contains('active')) submitLogin();
+  else submitOTP();
+});
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('inp-otp').addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g,'').slice(0,6);
+    if (this.value.length === 6) submitOTP();
+  });
+});
+</script>
+</body>
+</html>

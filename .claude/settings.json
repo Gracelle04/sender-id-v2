@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Stop-Process -Id 3044 -Force)",
+      "PowerShell($conn = Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue; if \\($conn\\) { Stop-Process -Id $conn.OwningProcess -Force; Write-Output \"Killed PID $\\($conn.OwningProcess\\)\" } else { Write-Output \"Port 3000 is free\" })",
+      "PowerShell(Stop-Process -Id 7360 -Force -ErrorAction SilentlyContinue)",
+      "PowerShell(Stop-Process -Id 32888 -Force -ErrorAction SilentlyContinue)"
+    ]
+  }
+}

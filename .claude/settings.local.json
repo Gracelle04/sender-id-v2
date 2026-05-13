@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker compose *)",
+      "Bash(node -e \"console.log\\(require\\('crypto'\\).randomBytes\\(48\\).toString\\('hex'\\)\\)\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/login.html)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/activate.html)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" -X POST http://localhost:3000/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"test\",\"password\":\"test\"}')",
+      "Bash(curl -s -X POST http://localhost:3000/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin@senderid.local\",\"password\":\"Admin1234!\"}')",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('OK - OTP sent to:', d.get\\('email', d\\)\\)\")",
+      "Bash(curl -sv -X POST http://localhost:3000/api/auth/login -H \"Content-Type: application/json\" -d \"{\\\\\"email\\\\\":\\\\\"admin@senderid.local\\\\\",\\\\\"password\\\\\":\\\\\"Admin1234!\\\\\"}\")",
+      "Bash(node reset_admin.js)",
+      "Bash(node server.js)",
+      "Bash(npm install *)",
+      "PowerShell($p = \\(Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue\\).OwningProcess; if \\($p\\) { Stop-Process -Id $p -Force; Write-Output \"Killed PID $p\" } else { Write-Output \"Port 3000 free\" })",
+      "PowerShell(docker save sender-id-v2:v1.0 -o \"c:\\\\Users\\\\USER\\\\Downloads\\\\sender-id-v2.tar\")",
+      "Bash(Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object State, OwningProcess)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue)",
+      "Read(//mnt/c/Users/USER/Downloads/**)",
+      "Read(//tmp/**)",
+      "PowerShell(Start-Process -FilePath \"node\" -ArgumentList \"server.js\" -WorkingDirectory \"C:\\\\Users\\\\USER\\\\Downloads\\\\sender-id-v2\" -WindowStyle Hidden -PassThru)",
+      "PowerShell(Test-NetConnection -ComputerName localhost -Port 3000 -InformationLevel Quiet)",
+      "Bash(Resolve-DnsName -Name \"cluster0.pkpow0q.mongodb.net\" -Type SRV -ErrorAction SilentlyContinue)",
+      "Bash(nslookup cluster0.pkpow0q.mongodb.net)",
+      "Bash(Test-NetConnection -ComputerName ac-sjazxjz-shard-00-00.pkpow0q.mongodb.net -Port 27017)",
+      "PowerShell($proc = Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1; if \\($proc\\) { Stop-Process -Id $proc.OwningProcess -Force; \"Killed PID $\\($proc.OwningProcess\\)\" } else { \"No process on 3000\" })"
+    ]
+  }
+}
