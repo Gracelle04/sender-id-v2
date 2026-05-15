@@ -724,7 +724,10 @@ tr:hover td{background:#F1F5F9}
       <div class="field"><label>Commentaires</label><textarea id="edit-comm" style="resize:none;height:60px;width:100%;padding:7px 10px;font-size:13px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font)"></textarea></div>
 
       <div style="border-top:1px solid var(--border);padding-top:12px">
-        <div style="font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Statuts opérateurs</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.07em">Statuts opérateurs</div>
+          <button id="edit-init-ops-btn" onclick="initEditOps()" style="display:none;padding:5px 12px;font-size:11px;font-weight:600;border:1px solid var(--blue4);border-radius:6px;background:var(--blue50);color:var(--blue);cursor:pointer;font-family:var(--font)">+ Initialiser les opérateurs du pays</button>
+        </div>
         <div id="edit-ops" style="display:flex;flex-direction:column;gap:6px"></div>
       </div>
 
@@ -1314,11 +1317,18 @@ function resetListFilters() {
 
 let bulkRows = [];
 
-function downloadBulkTemplate() {
-  const a = document.createElement('a');
-  a.href = '/api/sender-ids/bulk/template';
-  a.download = 'template_sender_ids.xlsx';
-  a.click();
+async function downloadBulkTemplate() {
+  try {
+    const r = await fetch('/api/sender-ids/bulk/template', {
+      headers: { 'ngrok-skip-browser-warning': '1', 'Authorization': 'Bearer ' + getToken() }
+    });
+    if (!r.ok) throw new Error('Erreur serveur');
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'template_sender_ids.xlsx'; a.click();
+    URL.revokeObjectURL(url);
+  } catch(e) { showToast('Erreur téléchargement : ' + e.message, 'error'); }
 }
 
 async function bulkPreview(input) {
@@ -1347,6 +1357,8 @@ async function bulkPreview(input) {
         <th style="padding:7px 10px">Sender ID</th>
         <th style="padding:7px 10px">Pays</th>
         <th style="padding:7px 10px">Date soumission</th>
+        <th style="padding:7px 10px">N° Ticket</th>
+        <th style="padding:7px 10px">URL Ticket</th>
         <th style="padding:7px 10px">Statut</th>
       </tr></thead>
       <tbody>${bulkRows.map(row => {
@@ -1355,12 +1367,15 @@ async function bulkPreview(input) {
           ? `<span style="color:var(--green4);font-weight:600">✓ Valide</span>`
           : `<span style="color:var(--red4);font-size:11px">${row.errors.join(', ')}</span>`;
         const ds = row.date_soumission ? new Date(row.date_soumission).toLocaleDateString('fr-FR') : '—';
+        const ticketUrl = row.ticket_url ? `<a href="${row.ticket_url}" target="_blank" style="color:var(--blue4);font-size:11px;word-break:break-all">${row.ticket_url}</a>` : '—';
         return `<tr style="border-bottom:1px solid var(--border);${bg}">
           <td style="padding:7px 10px;color:var(--text3)">${row.row}</td>
           <td style="padding:7px 10px;font-weight:500">${row.nom_client||'—'}</td>
           <td style="padding:7px 10px;font-family:var(--mono)">${row.sender_id||'—'}</td>
           <td style="padding:7px 10px">${row.pays_matched||row.pays||'—'}</td>
           <td style="padding:7px 10px">${ds}</td>
+          <td style="padding:7px 10px;font-family:var(--mono);font-size:11px">${row.numero_ticket||'—'}</td>
+          <td style="padding:7px 10px;max-width:160px">${ticketUrl}</td>
           <td style="padding:7px 10px">${badge}</td>
         </tr>`;
       }).join('')}</tbody>
@@ -1455,9 +1470,9 @@ const ZOHO_BASE = 'https://desk.zoho.com/agent/lafricamobilecom/lafricamobile/ac
 const ZOHO_VIEWS = {
   'senegal':                          'vue-senegal',
   'benin':                            'vue-benin',
-  'cote divoire':                     'vue-cote-divoire',
-  'cote d ivoire':                    'vue-cote-divoire',
-  'cote-d-ivoire':                    'vue-cote-divoire',
+  'cote divoire':                     'vue-co%CC%82te-divoire',
+  'cote d ivoire':                    'vue-co%CC%82te-divoire',
+  'cote-d-ivoire':                    'vue-co%CC%82te-divoire',
   'congo':                            'vue-congo',
   'gabon':                            'vue-gabon',
   'mali':                             'vuemali',
@@ -2290,6 +2305,16 @@ function openEdit(id) {
     document.getElementById('edit-dsub').value = d.toISOString().slice(0,10);
   }
 
+  // Bouton init opérateurs si aucun opérateur lié
+  const paysIdStr = e.pays_id?.$oid || e.pays_id?.toString() || e.pays_id;
+  const availableOps = allOperateurs.filter(op => {
+    const opPaysId = op.pays_id?.$oid || op.pays_id?.toString() || op.pays_id;
+    return opPaysId === paysIdStr;
+  });
+  const initBtn = document.getElementById('edit-init-ops-btn');
+  initBtn.style.display = (!e.operateurs?.length && availableOps.length) ? '' : 'none';
+  initBtn.dataset.paysId = paysIdStr;
+
   // Operateurs
   document.getElementById('edit-ops').innerHTML = (e.operateurs||[]).map((o,i) => {
     const appDate = o.date_approbation ? new Date(o.date_approbation).toISOString().slice(0,10) : '';
@@ -2314,6 +2339,40 @@ function openEdit(id) {
 function closeEdit() {
   document.getElementById('edit-overlay').style.display = 'none';
   document.body.style.overflow = '';
+}
+
+function initEditOps() {
+  const id = document.getElementById('edit-id').value;
+  const e = allSenderIds.find(x => x._id === id);
+  if (!e) return;
+  const paysIdStr = e.pays_id?.$oid || e.pays_id?.toString() || e.pays_id;
+  const ops = allOperateurs.filter(op => {
+    const opPaysId = op.pays_id?.$oid || op.pays_id?.toString() || op.pays_id;
+    return opPaysId === paysIdStr;
+  });
+  if (!ops.length) return;
+  // Injecter les opérateurs dans l'entrée locale pour que saveEdit les récupère
+  e.operateurs = ops.map(op => ({
+    operateur_id: op._id,
+    nom: op.nom,
+    statut: 'En cours de traitement',
+    date_approbation: null
+  }));
+  // Réafficher le modal avec les opérateurs
+  document.getElementById('edit-init-ops-btn').style.display = 'none';
+  document.getElementById('edit-ops').innerHTML = e.operateurs.map((o,i) => `
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;display:grid;grid-template-columns:1fr 160px 130px;gap:8px;align-items:center">
+      <div style="font-size:12px;font-weight:500">${o.nom}</div>
+      <select id="edit-op-statut-${i}" class="inline-sel ${getBadgeClass(o.statut)}"
+        onchange="this.className='inline-sel '+getBadgeClass(this.value)"
+        style="font-size:11px;padding:4px 8px;border-radius:4px;border:1px solid var(--border2);cursor:pointer;font-family:var(--font)">
+        ${STATUTS.map(s => `<option value="${s.v}" ${s.v===o.statut?'selected':''}>${s.v}</option>`).join('')}
+      </select>
+      <div class="field" style="gap:2px">
+        <label style="font-size:10px">Date approbation</label>
+        <input type="date" id="edit-op-appro-${i}" style="padding:4px 6px;font-size:11px;border:1px solid var(--border2);border-radius:5px;font-family:var(--font)"/>
+      </div>
+    </div>`).join('');
 }
 
 async function saveEdit() {

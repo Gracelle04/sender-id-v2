@@ -568,18 +568,17 @@ app.delete('/api/modeles/:id', writeRequired, async (req, res) => {
 
 // ─── BULK IMPORT / EXPORT ─────────────────────────────────────────────────────
 
-const BULK_COLS = ['nom_client','sender_id','pays','date_demande','date_soumission','ticket_url','commentaire'];
-const BULK_HEADERS = ['Client *','Sender ID *','Pays *','Date demande (JJ/MM/AAAA)','Date soumission (JJ/MM/AAAA)','URL Ticket','Commentaire'];
+const BULK_COLS = ['nom_client','sender_id','pays','date_demande','date_soumission','numero_ticket','ticket_url','commentaire'];
+const BULK_HEADERS = ['Client *','Sender ID *','Pays *','Date demande (JJ/MM/AAAA)','Date soumission (JJ/MM/AAAA)','N° Ticket','URL Ticket','Commentaire'];
 
-// Télécharger le template Excel
-app.get('/api/sender-ids/bulk/template', authRequired, (req, res) => {
+// Télécharger le template Excel (pas d'auth — fichier vide sans données sensibles)
+app.get('/api/sender-ids/bulk/template', (req, res) => {
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.aoa_to_sheet([
     BULK_HEADERS,
-    ['LAfricaMobile','LAFRICAMOB','Sénégal','01/01/2025','15/01/2025','https://...','Exemple'],
+    ['LAfricaMobile','LAFRICAMOB','Sénégal','01/01/2025','15/01/2025','TKT-0001','https://desk.zoho.com/...','Exemple'],
   ]);
-  ws['!cols'] = BULK_HEADERS.map((h,i) => ({ wch: [22,18,16,22,22,30,30][i] }));
-  ws['A1'].s = { font: { bold: true } };
+  ws['!cols'] = BULK_HEADERS.map((h,i) => ({ wch: [22,18,16,22,22,14,30,30][i] }));
   XLSX.utils.book_append_sheet(wb, ws, 'Sender IDs');
   const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
   res.setHeader('Content-Disposition', 'attachment; filename="template_sender_ids.xlsx"');
@@ -601,9 +600,9 @@ function parseDate(val) {
 app.post('/api/sender-ids/bulk/preview', authRequired, upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'Fichier manquant' });
-    const wb = XLSX.read(req.file.buffer, { type: 'buffer' });
+    const wb = XLSX.read(req.file.buffer, { type: 'buffer', cellDates: true });
     const ws = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false });
     if (rows.length < 2) return res.status(400).json({ error: 'Fichier vide ou sans données' });
 
     const pays_list = await db.collection('pays').find({}).toArray();
@@ -634,8 +633,9 @@ app.post('/api/sender-ids/bulk/preview', authRequired, upload.single('file'), as
         pays_matched:    matchedPays ? matchedPays.nom : null,
         date_demande:    parseDate(r[3]),
         date_soumission: parseDate(r[4]),
-        ticket_url:      String(r[5]||'').trim(),
-        commentaire:     String(r[6]||'').trim(),
+        numero_ticket:   String(r[5]||'').trim(),
+        ticket_url:      String(r[6]||'').trim(),
+        commentaire:     String(r[7]||'').trim(),
         errors,
         valid: errors.length === 0,
       });
@@ -657,6 +657,7 @@ app.post('/api/sender-ids/bulk/import', writeRequired, async (req, res) => {
       pays_id:         r.pays_id,
       date_demande:    r.date_demande ? new Date(r.date_demande) : null,
       date_soumission: r.date_soumission ? new Date(r.date_soumission) : null,
+      numero_ticket:   r.numero_ticket || null,
       ticket_url:      r.ticket_url || null,
       commentaire:     r.commentaire || null,
       operateurs:      [],
