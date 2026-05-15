@@ -11,6 +11,7 @@ const bcrypt     = require('bcryptjs');
 const jwt        = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const crypto     = require('crypto');
+const XLSX       = require('xlsx');
 
 const app = express();
 app.use(cors());
@@ -563,6 +564,109 @@ app.delete('/api/modeles/:id', writeRequired, async (req, res) => {
     }
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─── BULK IMPORT / EXPORT ─────────────────────────────────────────────────────
+
+const BULK_COLS = ['nom_client','sender_id','pays','date_demande','date_soumission','ticket_url','commentaire'];
+const BULK_HEADERS = ['Client *','Sender ID *','Pays *','Date demande (JJ/MM/AAAA)','Date soumission (JJ/MM/AAAA)','URL Ticket','Commentaire'];
+
+// Télécharger le template Excel
+app.get('/api/sender-ids/bulk/template', authRequired, (req, res) => {
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet([
+    BULK_HEADERS,
+    ['LAfricaMobile','LAFRICAMOB','Sénégal','01/01/2025','15/01/2025','https://...','Exemple'],
+  ]);
+  ws['!cols'] = BULK_HEADERS.map((h,i) => ({ wch: [22,18,16,22,22,30,30][i] }));
+  ws['A1'].s = { font: { bold: true } };
+  XLSX.utils.book_append_sheet(wb, ws, 'Sender IDs');
+  const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+  res.setHeader('Content-Disposition', 'attachment; filename="template_sender_ids.xlsx"');
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.send(buf);
+});
+
+// Parser une date JJ/MM/AAAA ou ISO
+function parseDate(val) {
+  if (!val) return null;
+  const s = String(val).trim();
+  const fr = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (fr) return new Date(`${fr[3]}-${fr[2].padStart(2,'0')}-${fr[1].padStart(2,'0')}`);
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
+}
+
+// Upload et preview (parse sans insérer)
+app.post('/api/sender-ids/bulk/preview', authRequired, upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'Fichier manquant' });
+    const wb = XLSX.read(req.file.buffer, { type: 'buffer' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    if (rows.length < 2) return res.status(400).json({ error: 'Fichier vide ou sans données' });
+
+    const pays_list = await db.collection('pays').find({}).toArray();
+    const normPays = (n) => (n||'').toLowerCase().trim().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    const results = [];
+
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      const client = String(r[0]||'').trim();
+      const sid    = String(r[1]||'').trim();
+      const pays   = String(r[2]||'').trim();
+      if (!client && !sid && !pays) continue; // ligne vide
+
+      const errors = [];
+      if (!client) errors.push('Client manquant');
+      if (!sid)    errors.push('Sender ID manquant');
+      if (!pays)   errors.push('Pays manquant');
+
+      const matchedPays = pays_list.find(p => normPays(p.nom) === normPays(pays));
+      if (pays && !matchedPays) errors.push(`Pays introuvable: "${pays}"`);
+
+      results.push({
+        row: i + 1,
+        nom_client:      client,
+        sender_id:       sid,
+        pays:            pays,
+        pays_id:         matchedPays ? matchedPays._id : null,
+        pays_matched:    matchedPays ? matchedPays.nom : null,
+        date_demande:    parseDate(r[3]),
+        date_soumission: parseDate(r[4]),
+        ticket_url:      String(r[5]||'').trim(),
+        commentaire:     String(r[6]||'').trim(),
+        errors,
+        valid: errors.length === 0,
+      });
+    }
+    res.json({ total: results.length, valid: results.filter(r=>r.valid).length, rows: results });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Confirmer l'import (insérer les lignes valides)
+app.post('/api/sender-ids/bulk/import', writeRequired, async (req, res) => {
+  try {
+    const { rows } = req.body;
+    if (!rows?.length) return res.status(400).json({ error: 'Aucune donnée' });
+    const valid = rows.filter(r => r.valid);
+    if (!valid.length) return res.status(400).json({ error: 'Aucune ligne valide' });
+    const docs = valid.map(r => ({
+      nom_client:      r.nom_client,
+      sender_id:       r.sender_id,
+      pays_id:         r.pays_id,
+      date_demande:    r.date_demande ? new Date(r.date_demande) : null,
+      date_soumission: r.date_soumission ? new Date(r.date_soumission) : null,
+      ticket_url:      r.ticket_url || null,
+      commentaire:     r.commentaire || null,
+      operateurs:      [],
+      notifie:         false,
+      created_at:      new Date(),
+      created_by:      req.user.email,
+    }));
+    const result = await db.collection('sender_ids').insertMany(docs);
+    res.json({ inserted: result.insertedCount });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 // ─── ACTIVITY LOGS ────────────────────────────────────────────────────────────
