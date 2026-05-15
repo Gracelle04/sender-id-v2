@@ -25,7 +25,9 @@
       "Bash(Resolve-DnsName -Name \"cluster0.pkpow0q.mongodb.net\" -Type SRV -ErrorAction SilentlyContinue)",
       "Bash(nslookup cluster0.pkpow0q.mongodb.net)",
       "Bash(Test-NetConnection -ComputerName ac-sjazxjz-shard-00-00.pkpow0q.mongodb.net -Port 27017)",
-      "PowerShell($proc = Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1; if \\($proc\\) { Stop-Process -Id $proc.OwningProcess -Force; \"Killed PID $\\($proc.OwningProcess\\)\" } else { \"No process on 3000\" })"
+      "PowerShell($proc = Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1; if \\($proc\\) { Stop-Process -Id $proc.OwningProcess -Force; \"Killed PID $\\($proc.OwningProcess\\)\" } else { \"No process on 3000\" })",
+      "Bash(git remote *)",
+      "Bash(git push *)"
     ]
   }
 }

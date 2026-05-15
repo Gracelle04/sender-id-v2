@@ -120,6 +120,8 @@ async function connectDB() {
   await db.collection('otps').createIndex({ expires_at: 1 }, { expireAfterSeconds: 0 });
   await db.collection('invitations').createIndex({ expires_at: 1 }, { expireAfterSeconds: 0 });
   await db.collection('invitations').createIndex({ token: 1 }, { unique: true });
+  await db.collection('activity_logs').createIndex({ timestamp: -1 });
+  await db.collection('activity_logs').createIndex({ user_email: 1 });
 
   // Compte admin par défaut
   const adminExists = await db.collection('users').findOne({ role: 'admin' });
@@ -203,6 +205,7 @@ app.post('/api/auth/verify-otp', async (req, res) => {
       { id: user._id.toString(), email: user.email, nom: user.nom, role: user.role },
       JWT_SECRET, { expiresIn: '8h' }
     );
+    await logActivity(user, 'login');
     res.json({ success: true, token, user: { email: user.email, nom: user.nom, role: user.role } });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -559,6 +562,47 @@ app.delete('/api/modeles/:id', writeRequired, async (req, res) => {
       await db.collection('modeles').deleteOne({ _id: new ObjectId(req.params.id) });
     }
     res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─── ACTIVITY LOGS ────────────────────────────────────────────────────────────
+
+async function logActivity(user, action, meta = {}) {
+  try {
+    await db.collection('activity_logs').insertOne({
+      user_id:    user.id || user._id?.toString(),
+      user_email: user.email,
+      user_nom:   user.nom,
+      user_role:  user.role,
+      action,
+      ...meta,
+      timestamp: new Date()
+    });
+  } catch {}
+}
+
+// Enregistrer une action (page vue, logout)
+app.post('/api/activity/log', authRequired, async (req, res) => {
+  const { action, page, duration_ms } = req.body;
+  await logActivity(req.user, action, { page, duration_ms });
+  res.json({ success: true });
+});
+
+// Récupérer les logs (admin uniquement)
+app.get('/api/admin/activity', adminRequired, async (req, res) => {
+  try {
+    const { user_email, date_from, date_to, limit = 200 } = req.query;
+    const filter = {};
+    if (user_email) filter.user_email = user_email;
+    if (date_from || date_to) {
+      filter.timestamp = {};
+      if (date_from) filter.timestamp.$gte = new Date(date_from);
+      if (date_to)   filter.timestamp.$lte = new Date(new Date(date_to).getTime() + 86399999);
+    }
+    const logs = await db.collection('activity_logs')
+      .find(filter).sort({ timestamp: -1 }).limit(parseInt(limit)).toArray();
+    const users = await db.collection('users').find({}, { projection: { email: 1, nom: 1 } }).toArray();
+    res.json({ logs, users });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

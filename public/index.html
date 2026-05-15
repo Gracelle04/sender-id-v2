@@ -207,6 +207,26 @@ tr:hover td{background:#F1F5F9}
 @keyframes toast-in{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
 @keyframes toast-out{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(20px)}}
 
+/* ── HAMBURGER ── */
+.hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;padding:6px;border:none;background:transparent;cursor:pointer;border-radius:6px;flex-shrink:0}
+.hamburger:hover{background:#F1F5F9}
+.hamburger span{display:block;height:2px;background:var(--text);border-radius:2px;transition:all .25s}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* ── DRAWER ── */
+.drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:199;opacity:0;transition:opacity .25s}
+.drawer-overlay.open{display:block;opacity:1}
+.drawer{position:fixed;top:0;right:0;height:100%;width:260px;background:#fff;z-index:200;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 24px rgba(0,0,0,.12);display:flex;flex-direction:column}
+.drawer.open{transform:translateX(0)}
+.drawer-header{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--border)}
+.drawer-header span{font-size:13px;font-weight:700;color:var(--text)}
+.drawer-close{width:32px;height:32px;border:none;background:transparent;cursor:pointer;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--text2)}
+.drawer-close:hover{background:#F1F5F9}
+.drawer-nav{flex:1;overflow-y:auto;padding:10px}
+.drawer-nav .tab{width:100%;text-align:left;border-radius:6px;padding:11px 14px;font-size:13px;margin-bottom:3px;display:block}
+
 /* ── RESPONSIVE ── */
 @media (max-width: 900px) {
   .content{padding:1rem}
@@ -216,7 +236,7 @@ tr:hover td{background:#F1F5F9}
 
 @media (max-width: 640px) {
   .content{padding:.75rem .625rem}
-  .topbar{padding:0 .75rem;gap:4px}
+  .topbar{padding:0 .75rem;gap:4px;position:relative}
   .topbar h2{font-size:12px}
   #user-bar .user-name{display:none}
   .g2,.g3{grid-template-columns:1fr}
@@ -229,6 +249,8 @@ tr:hover td{background:#F1F5F9}
   table{font-size:12px}
   th,td{padding:8px}
   .td-m{display:none}
+  .tabs{display:none}
+  .hamburger{display:flex}
 }
 
 @media (max-width: 480px) {
@@ -241,6 +263,28 @@ tr:hover td{background:#F1F5F9}
 <body>
 
 <div id="toast-container"></div>
+
+<!-- ── DRAWER ── -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="toggleMobileMenu()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <span>Navigation</span>
+    <button class="drawer-close" onclick="toggleMobileMenu()" aria-label="Fermer">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="drawer-nav">
+    <button class="tab" id="mtab-form" onclick="showPage('form',this,'mobile')">+ Nouveau</button>
+    <button class="tab active" id="mtab-list" onclick="showPage('list',this,'mobile')">Liste</button>
+    <button class="tab" id="mtab-dash" onclick="showPage('dash',this,'mobile')">Dashboard</button>
+    <button class="tab" id="mtab-biblio" onclick="showPage('biblio',this,'mobile')">Bibliothèque</button>
+    <button class="tab" id="mtab-pays" onclick="showPage('pays',this,'mobile')">Pays &amp; opérateurs</button>
+    <button class="tab" id="mtab-lookup" onclick="showPage('lookup',this,'mobile')">Lookup</button>
+    <button class="tab" id="mtab-admin" onclick="showPage('admin',this,'mobile')" style="display:none">Utilisateurs</button>
+    <button class="tab" id="mtab-activity" onclick="showPage('activity',this,'mobile')" style="display:none">Historique</button>
+  </div>
+</div>
+
 <div class="app">
   <div class="topbar">
     <div class="topbar-brand">
@@ -255,7 +299,11 @@ tr:hover td{background:#F1F5F9}
       <button class="tab" id="tab-pays" onclick="showPage('pays',this)">Pays & opérateurs</button>
       <button class="tab" id="tab-lookup" onclick="showPage('lookup',this)">Lookup</button>
       <button class="tab" id="tab-admin" onclick="showPage('admin',this)" style="display:none">Utilisateurs</button>
+      <button class="tab" id="tab-activity" onclick="showPage('activity',this)" style="display:none">Historique</button>
     </div>
+    <button class="hamburger" id="hamburger-btn" onclick="toggleMobileMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
     <div id="user-bar" style="display:flex;align-items:center;gap:8px;flex-shrink:0;padding:8px 0">
       <span class="user-name" id="user-name-display" style="color:var(--text2);font-size:12px;font-weight:500"></span>
       <span class="badge b-blue" id="user-role-badge" style="font-size:10px"></span>
@@ -598,6 +646,34 @@ tr:hover td{background:#F1F5F9}
     </div>
   </div>
 
+  <!-- HISTORIQUE D'ACTIVITÉ -->
+  <div class="page" id="page-activity">
+    <div class="card" style="margin-bottom:.875rem">
+      <div class="clabel">Filtres</div>
+      <div class="g3" style="align-items:flex-end">
+        <div class="field">
+          <label>Utilisateur</label>
+          <select id="act-filter-user" onchange="loadActivity()">
+            <option value="">Tous</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Date début</label>
+          <input type="date" id="act-filter-from" onchange="loadActivity()"/>
+        </div>
+        <div class="field">
+          <label>Date fin</label>
+          <input type="date" id="act-filter-to" onchange="loadActivity()"/>
+        </div>
+      </div>
+      <button class="btn btn-ghost" onclick="document.getElementById('act-filter-user').value='';document.getElementById('act-filter-from').value='';document.getElementById('act-filter-to').value='';loadActivity()" style="font-size:12px;margin-top:6px">Réinitialiser</button>
+    </div>
+    <div class="card">
+      <div class="clabel">Journal d'activité</div>
+      <div id="activity-body"><div class="loading">Chargement...</div></div>
+    </div>
+  </div>
+
 <!-- EDIT MODAL -->
 <div id="edit-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;overflow-y:auto;padding:2rem 1rem" onclick="if(event.target===this)closeEdit()">
   <div style="max-width:700px;margin:0 auto;background:var(--surface);border-radius:var(--rl);overflow:hidden" onclick="event.stopPropagation()">
@@ -824,18 +900,40 @@ function renderNotifyAlerts() {
   });
 }
 
-function showPage(id, btn) {
+function toggleMobileMenu() {
+  const btn = document.getElementById('hamburger-btn');
+  const drawer = document.getElementById('drawer');
+  const overlay = document.getElementById('drawer-overlay');
+  btn.classList.toggle('open');
+  drawer.classList.toggle('open');
+  overlay.classList.toggle('open');
+  document.body.style.overflow = drawer.classList.contains('open') ? 'hidden' : '';
+}
+
+function showPage(id, btn, source) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
-  btn.classList.add('active');
+  // sync both desktop and mobile tab active states
+  const desktopTab = document.getElementById('tab-' + id);
+  const mobileTab  = document.getElementById('mtab-' + id);
+  if (desktopTab) desktopTab.classList.add('active');
+  if (mobileTab)  mobileTab.classList.add('active');
+  if (source === 'mobile') {
+    document.getElementById('hamburger-btn').classList.remove('open');
+    document.getElementById('drawer').classList.remove('open');
+    document.getElementById('drawer-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
   if (id === 'form')   { if (!document.getElementById('sids-container').children.length) addSenderBlock(); updateClientDatalist(); }
   if (id === 'list')   { loadSenderIds(); }
   if (id === 'dash')   { loadDash(); }
   if (id === 'biblio') { loadBiblio(); }
   if (id === 'pays')   { loadPaysPage(); }
   if (id === 'lookup') { loadLookup(); }
-  if (id === 'admin')  { loadAdminUsers(); }
+  if (id === 'admin')    { loadAdminUsers(); }
+  if (id === 'activity') { loadActivity(); }
+  trackPageVisit(id);
 }
 
 // ─── FORMULAIRE ───────────────────────────────────────────────────────────────
@@ -1221,6 +1319,8 @@ const ZOHO_VIEWS = {
   'tchad':                            'vue-tchad',
   'centrafrique':                     'vue-centrafrique',
   'nigeria':                          'vue-nigeria',
+  'sierra leone':                     'vue-sierra-le%CC%81one',
+  'sierra-leone':                     'vue-sierra-le%CC%81one',
 };
 
 function normalizePays(nom) {
@@ -1242,7 +1342,7 @@ function zohoBtn(paysNom) {
 }
 
 function loadMoreList() {
-  listOffset += 10;
+  listOffset += 5;
   renderList();
 }
 
@@ -1269,12 +1369,12 @@ function renderList() {
 
   const allEntries = Object.entries(byClient);
   const totalClients = allEntries.length;
-  const visibleEntries = allEntries.slice(0, listOffset + 10);
+  const visibleEntries = allEntries.slice(0, listOffset + 5);
   const remaining = totalClients - visibleEntries.length;
 
   if (remaining > 0) {
     pagination.style.display = 'block';
-    paginationLabel.textContent = `Charger ${Math.min(remaining, 10)} suivants`;
+    paginationLabel.textContent = `Charger ${Math.min(remaining, 5)} suivants`;
     paginationCount.textContent = `${visibleEntries.length} / ${totalClients} clients affichés`;
   } else {
     pagination.style.display = 'none';
@@ -2201,7 +2301,77 @@ function closeDetail() {
 
 function goToLogin() { clearToken(); window.location.href = '/login.html'; }
 
-function logout() { goToLogin(); }
+function logout() {
+  const token = getToken();
+  if (token) {
+    fetch('/api/activity/log', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}, body: JSON.stringify({ action:'logout' }) }).catch(()=>{});
+  }
+  goToLogin();
+}
+
+// ─── HISTORIQUE D'ACTIVITÉ ────────────────────────────────────────────────────
+
+let _actPageStart = null;
+let _actCurrentPage = null;
+
+function trackPageVisit(page) {
+  const token = getToken();
+  if (!token) return;
+  const now = Date.now();
+  if (_actCurrentPage && _actPageStart) {
+    fetch('/api/activity/log', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({ action:'page_view', page: _actCurrentPage, duration_ms: now - _actPageStart }) }).catch(()=>{});
+  }
+  _actCurrentPage = page;
+  _actPageStart = now;
+}
+
+async function loadActivity() {
+  const token = getToken();
+  const body = document.getElementById('activity-body');
+  body.innerHTML = '<div class="loading">Chargement...</div>';
+  const user  = document.getElementById('act-filter-user').value;
+  const from  = document.getElementById('act-filter-from').value;
+  const to    = document.getElementById('act-filter-to').value;
+  const params = new URLSearchParams();
+  if (user) params.set('user_email', user);
+  if (from) params.set('date_from', from);
+  if (to)   params.set('date_to', to);
+  try {
+    const r = await fetch('/api/admin/activity?' + params, { headers:{'Authorization':'Bearer '+token} });
+    const { logs, users } = await r.json();
+    // Populate user filter
+    const sel = document.getElementById('act-filter-user');
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">Tous</option>' + users.map(u => `<option value="${u.email}" ${cur===u.email?'selected':''}>${u.nom} (${u.email})</option>`).join('');
+    if (!logs.length) { body.innerHTML = '<div style="text-align:center;color:var(--text3);padding:24px;font-size:13px">Aucune activité enregistrée.</div>'; return; }
+    const actionLabel = { login:'Connexion', logout:'Déconnexion', page_view:'Page visitée' };
+    const actionColor = { login:'var(--green4)', logout:'var(--red4)', page_view:'var(--blue4)' };
+    const pageLabel   = { list:'Liste', form:'Nouveau', dash:'Dashboard', biblio:'Bibliothèque', pays:'Pays & opérateurs', lookup:'Lookup', admin:'Utilisateurs', activity:'Historique' };
+    body.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr style="border-bottom:2px solid var(--border);text-align:left">
+        <th style="padding:8px 10px;color:var(--text2);font-weight:600">Utilisateur</th>
+        <th style="padding:8px 10px;color:var(--text2);font-weight:600">Action</th>
+        <th style="padding:8px 10px;color:var(--text2);font-weight:600">Page</th>
+        <th style="padding:8px 10px;color:var(--text2);font-weight:600">Durée</th>
+        <th style="padding:8px 10px;color:var(--text2);font-weight:600">Date &amp; heure</th>
+      </tr></thead>
+      <tbody>${logs.map(l => {
+        const d = new Date(l.timestamp);
+        const dateStr = d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'});
+        const dur = l.duration_ms ? (l.duration_ms < 60000 ? Math.round(l.duration_ms/1000)+'s' : Math.round(l.duration_ms/60000)+'min') : '—';
+        const col = actionColor[l.action] || 'var(--text3)';
+        return `<tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:8px 10px"><strong>${l.user_nom||'—'}</strong><br/><span style="color:var(--text3);font-size:10px">${l.user_email}</span></td>
+          <td style="padding:8px 10px"><span style="padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;background:${col}18;color:${col}">${actionLabel[l.action]||l.action}</span></td>
+          <td style="padding:8px 10px;color:var(--text2)">${pageLabel[l.page]||l.page||'—'}</td>
+          <td style="padding:8px 10px;color:var(--text2);font-family:var(--mono)">${dur}</td>
+          <td style="padding:8px 10px;color:var(--text2);white-space:nowrap">${dateStr}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
+  } catch(e) { body.innerHTML = '<div style="color:var(--red4);padding:16px;font-size:13px">Erreur: '+e.message+'</div>'; }
+}
 
 function applyUserUI(user) {
   document.getElementById('user-bar').style.display = 'flex';
@@ -2209,7 +2379,12 @@ function applyUserUI(user) {
   const roleLabels = { admin: 'Admin', user: 'Utilisateur', viewer: 'Lecteur' };
   document.getElementById('user-role-badge').textContent = roleLabels[user.role] || user.role;
 
-  if (user.role === 'admin') document.getElementById('tab-admin').style.display = '';
+  if (user.role === 'admin') {
+    document.getElementById('tab-admin').style.display = '';
+    document.getElementById('mtab-admin').style.display = '';
+    document.getElementById('tab-activity').style.display = '';
+    document.getElementById('mtab-activity').style.display = '';
+  }
   if (user.role === 'viewer') {
     window.__viewerMode = true;
     document.getElementById('tab-form').style.display = 'none';
