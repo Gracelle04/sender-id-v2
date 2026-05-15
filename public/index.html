@@ -380,6 +380,9 @@ tr:hover td{background:#F1F5F9}
       <select id="f-pays-list" onchange="filterList()">
         <option value="">Tous les pays</option>
       </select>
+      <input type="date" id="f-date-from" onchange="filterList()" title="Date de soumission — début" style="min-width:130px"/>
+      <input type="date" id="f-date-to" onchange="filterList()" title="Date de soumission — fin" style="min-width:130px"/>
+      <button onclick="resetListFilters()" title="Réinitialiser les filtres" style="padding:7px 10px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text3);cursor:pointer;font-family:var(--font);white-space:nowrap">✕ Filtres</button>
     </div>
     <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:.875rem">
       <button onclick="exportCSV()" style="padding:7px 14px;font-size:12px;font-weight:500;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text2);cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px">
@@ -456,6 +459,11 @@ tr:hover td{background:#F1F5F9}
         <div class="stat-num" style="color:var(--text2)" id="d-total-ops">—</div>
         <div class="stat-sub">entrées opérateurs</div>
       </div>
+      <div class="stat-card">
+        <div class="stat-label">Pending</div>
+        <div class="stat-num" style="color:var(--amber4)" id="d-pending">—</div>
+        <div class="stat-sub" id="d-pending-sub">senders × opérateurs</div>
+      </div>
     </div>
 
     <div class="g2">
@@ -470,11 +478,14 @@ tr:hover td{background:#F1F5F9}
     </div>
 
     <div class="card">
-      <div class="clabel">Sender IDs récents</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="clabel" style="margin-bottom:0">Pending — les plus anciens</div>
+        <span style="font-size:11px;color:var(--text3)" id="dash-recent-label"></span>
+      </div>
       <table>
         <thead><tr>
           <th>Client</th><th>Sender ID</th><th>Pays</th>
-          <th>Progression</th><th>Statut</th><th>Notification</th>
+          <th>Progression</th><th>Statut</th><th>Âge</th><th>Notification</th>
         </tr></thead>
         <tbody id="dash-recent"></tbody>
       </table>
@@ -1231,18 +1242,39 @@ function getBadgeClass(s) {
 }
 
 function filterList() {
-  const q = document.getElementById('search-inp').value.toLowerCase();
-  const fs = document.getElementById('f-statut').value;
-  const fp = document.getElementById('f-pays-list').value;
+  const q    = document.getElementById('search-inp').value.toLowerCase();
+  const fs   = document.getElementById('f-statut').value;
+  const fp   = document.getElementById('f-pays-list').value;
+  const from = document.getElementById('f-date-from').value;
+  const to   = document.getElementById('f-date-to').value;
+  const fromD = from ? new Date(from) : null;
+  const toD   = to   ? new Date(to + 'T23:59:59') : null;
   filteredSenderIds = allSenderIds.filter(e => {
     const allSt = (e.operateurs||[]).map(o => o.statut).join(' ');
     const match = !q || (e.nom_client+e.sender_id+(e.pays_nom||'')+allSt).toLowerCase().includes(q);
     const ms = !fs || (e.operateurs||[]).some(o => o.statut === fs);
     const mp = !fp || (e.pays_id?.$oid || e.pays_id?.toString() || e.pays_id) === fp;
-    return match && ms && mp;
+    let md = true;
+    if (fromD || toD) {
+      const sub = e.date_soumission ? new Date(e.date_soumission) : null;
+      if (!sub) { md = false; }
+      else {
+        if (fromD && sub < fromD) md = false;
+        if (toD   && sub > toD)   md = false;
+      }
+    }
+    return match && ms && mp && md;
   });
   listOffset = 0;
   renderList();
+}
+
+function resetListFilters() {
+  ['search-inp','f-statut','f-pays-list','f-date-from','f-date-to'].forEach(id => {
+    const el = document.getElementById(id);
+    el.value = '';
+  });
+  filterList();
 }
 
 function confirmDelete(id, client, sid) {
@@ -1485,9 +1517,20 @@ async function loadDash() {
     ).length;
     const totalOps = allSenderIds.reduce((acc, e) => acc + (e.operateurs||[]).length, 0);
 
+    // Pending : senders ayant au moins un opérateur en attente + total ops pending
+    const PENDING_STATUTS = ['En cours de traitement', "En attente d'info", 'Soumis'];
+    const pendingSenders = allSenderIds.filter(e =>
+      (e.operateurs||[]).some(o => PENDING_STATUTS.includes(o.statut))
+    ).length;
+    const pendingOps = allSenderIds.reduce((acc, e) =>
+      acc + (e.operateurs||[]).filter(o => PENDING_STATUTS.includes(o.statut)).length, 0
+    );
+
     document.getElementById('d-inprogress').textContent = inProgress;
     document.getElementById('d-rejected').textContent = rejected;
     document.getElementById('d-total-ops').textContent = totalOps;
+    document.getElementById('d-pending').textContent = pendingSenders;
+    document.getElementById('d-pending-sub').textContent = `${pendingSenders} sender${pendingSenders>1?'s':''} · ${pendingOps} opérateur${pendingOps>1?'s':''}`;
 
     // Bar chart statuts
     const maxS = Math.max(1, ...Object.values(stats.statuts));
@@ -1515,18 +1558,38 @@ async function loadDash() {
       </div>`).join('');
 
     // Recent table
-    document.getElementById('dash-recent').innerHTML = allSenderIds.slice(0,8).map(e => {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const PENDING_ST = ['En cours de traitement', "En attente d'info", 'Soumis', 'Collecte interne'];
+    const pendingEntries = allSenderIds
+      .filter(e => (e.operateurs||[]).some(o => PENDING_ST.includes(o.statut)))
+      .sort((a, b) => {
+        const da = a.date_soumission ? new Date(a.date_soumission) : new Date();
+        const db = b.date_soumission ? new Date(b.date_soumission) : new Date();
+        return da - db; // plus ancien en premier
+      });
+    const dashEntries = pendingEntries.length ? pendingEntries.slice(0, 8) : allSenderIds.slice(0, 8);
+    document.getElementById('dash-recent-label').textContent =
+      pendingEntries.length ? `${pendingEntries.length} en attente` : '8 derniers';
+    document.getElementById('dash-recent').innerHTML = dashEntries.map(e => {
       const gs = isFullyApproved(e)
         ? `<span class="badge b-ok">Tous approuvés</span>`
         : (e.operateurs||[]).some(o=>o.statut==='Rejeté')
           ? `<span class="badge b-rej">Rejeté partiel</span>`
           : `<span class="badge b-proc">En cours</span>`;
+      let ageTd = '<td style="color:var(--text3);font-size:11px">—</td>';
+      if (e.date_soumission) {
+        const sub = new Date(e.date_soumission); sub.setHours(0,0,0,0);
+        const days = Math.round((today - sub) / (1000*60*60*24));
+        const color = days > 60 ? 'var(--red4)' : days > 30 ? 'var(--amber4)' : 'var(--green4)';
+        ageTd = `<td style="font-weight:600;color:${color};font-size:12px">${days}j</td>`;
+      }
       return `<tr>
         <td style="font-weight:500">${e.nom_client}</td>
         <td style="font-family:var(--mono);font-size:12px">${e.sender_id}</td>
         <td style="color:var(--text2)">${e.pays_nom}</td>
         <td>${prog(e)}</td>
         <td>${gs}</td>
+        ${ageTd}
         <td>${notifPill(e)}</td>
       </tr>`;
     }).join('');
