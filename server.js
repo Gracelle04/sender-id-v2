@@ -123,6 +123,7 @@ async function connectDB() {
   await db.collection('invitations').createIndex({ token: 1 }, { unique: true });
   await db.collection('activity_logs').createIndex({ timestamp: -1 });
   await db.collection('activity_logs').createIndex({ user_email: 1 });
+  await db.collection('agregateurs').createIndex({ nom: 1 });
 
   // Compte admin par défaut
   const adminExists = await db.collection('users').findOne({ role: 'admin' });
@@ -379,6 +380,73 @@ app.get('/api/operateurs', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// ─── AGRÉGATEURS ──────────────────────────────────────────────────────────────
+// Schéma existant : { nom, type_sms, statut, pays_couverts:[{pays:string, operateurs:[]}], notes }
+
+function normStr(s) {
+  return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
+}
+
+app.get('/api/agregateurs', async (req, res) => {
+  try {
+    let agr = await db.collection('agregateurs')
+      .find({}, { projection: { nom: 1, pays_couverts: 1, type_sms: 1, statut: 1, notes: 1 } })
+      .sort({ nom: 1 }).toArray();
+
+    // Filtre optionnel par pays
+    if (req.query.pays_id) {
+      const p = await db.collection('pays').findOne({ _id: new ObjectId(req.query.pays_id) });
+      if (p) {
+        const nom = normStr(p.nom);
+        agr = agr.filter(a => (a.pays_couverts||[]).some(pc => normStr(pc.pays) === nom));
+      }
+    } else if (req.query.pays) {
+      const nom = normStr(req.query.pays);
+      agr = agr.filter(a => (a.pays_couverts||[]).some(pc => normStr(pc.pays) === nom));
+    }
+
+    res.json(agr);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/agregateurs', adminRequired, async (req, res) => {
+  try {
+    const { nom, pays_noms, type_sms, notes } = req.body;
+    if (!nom) return res.status(400).json({ error: 'Nom requis' });
+    const doc = {
+      nom,
+      type_sms: type_sms || 'Local',
+      type_fournisseur: 'Agrégateur',
+      statut: 'actif',
+      pays_couverts: (pays_noms || []).map(p => ({ pays: p, operateurs: [] })),
+      notes: notes || '',
+      created_at: new Date()
+    };
+    const result = await db.collection('agregateurs').insertOne(doc);
+    res.json({ success: true, id: result.insertedId });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/agregateurs/:id', adminRequired, async (req, res) => {
+  try {
+    const { nom, pays_noms, type_sms, notes } = req.body;
+    const update = {};
+    if (nom       !== undefined) update.nom           = nom;
+    if (type_sms  !== undefined) update.type_sms      = type_sms;
+    if (notes     !== undefined) update.notes         = notes;
+    if (pays_noms !== undefined) update.pays_couverts = pays_noms.map(p => ({ pays: p, operateurs: [] }));
+    await db.collection('agregateurs').updateOne({ _id: new ObjectId(req.params.id) }, { $set: update });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/agregateurs/:id', adminRequired, async (req, res) => {
+  try {
+    await db.collection('agregateurs').deleteOne({ _id: new ObjectId(req.params.id) });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // ─── SENDER IDS ───────────────────────────────────────────────────────────────
 
 app.get('/api/sender-ids', async (req, res) => {
@@ -400,10 +468,13 @@ app.post('/api/sender-ids', writeRequired, async (req, res) => {
   try {
     const doc = {
       ...req.body, pays_id: new ObjectId(req.body.pays_id),
+      agregateur_id: req.body.agregateur_id ? new ObjectId(req.body.agregateur_id) : null,
       notifie: false, date_notification: null,
       created_at: new Date(), updated_at: new Date(),
       operateurs: (req.body.operateurs || []).map(op => ({
         ...op, operateur_id: op.operateur_id ? new ObjectId(op.operateur_id) : null,
+        agregateur_id: op.agregateur_id ? new ObjectId(op.agregateur_id) : null,
+        canal: op.canal || 'Direct',
         date_approbation: op.date_approbation ? new Date(op.date_approbation) : null
       }))
     };
@@ -420,11 +491,14 @@ app.put('/api/sender-ids/:id', writeRequired, async (req, res) => {
       commentaires: req.body.commentaires,
       date_demande: req.body.date_demande || null,
       date_soumission: req.body.date_soumission || null,
+      agregateur_id: req.body.agregateur_id ? new ObjectId(req.body.agregateur_id) : null,
       updated_at: new Date()
     };
     if (req.body.operateurs) {
       update.operateurs = req.body.operateurs.map(op => ({
         ...op, operateur_id: op.operateur_id ? new ObjectId(op.operateur_id) : null,
+        agregateur_id: op.agregateur_id ? new ObjectId(op.agregateur_id) : null,
+        canal: op.canal || 'Direct',
         date_approbation: op.date_approbation ? new Date(op.date_approbation) : null
       }));
     }

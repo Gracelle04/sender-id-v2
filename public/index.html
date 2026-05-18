@@ -334,6 +334,16 @@ tr:hover td{background:#F1F5F9}
           <option value="">— Choisir un pays —</option>
         </select>
       </div>
+      <div id="form-pays-notes" style="display:none;gap:10px;padding:10px 14px;background:var(--blue50);border:1.5px solid var(--blueb);border-radius:var(--r);margin-bottom:10px">
+        <div style="font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;flex-shrink:0;padding-top:2px">Pré-requis</div>
+        <div id="form-pays-notes-list" style="font-size:12px;color:var(--blue);display:flex;flex-direction:column;gap:3px"></div>
+      </div>
+      <div id="f-agregateur-row" style="display:none" class="field" style="margin-bottom:10px">
+        <label>Agrégateur demandeur (optionnel)</label>
+        <select id="f-agregateur">
+          <option value="">— Aucun (direct) —</option>
+        </select>
+      </div>
       <div class="field">
         <label>Commentaires</label>
         <textarea id="f-comm" placeholder="Remarques, conditions particulières..."></textarea>
@@ -526,6 +536,7 @@ tr:hover td{background:#F1F5F9}
     <div style="display:flex;gap:0;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1rem;align-self:flex-start;width:fit-content">
       <button id="pays-tab-list" onclick="switchPaysTab('list')" style="padding:7px 18px;font-size:12px;font-weight:500;border:none;background:var(--blue4);color:#fff;cursor:pointer;font-family:var(--font)">Pays & opérateurs</button>
       <button id="pays-tab-modeles" onclick="switchPaysTab('modeles')" style="padding:7px 18px;font-size:12px;font-weight:500;border:none;background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font)">Modèles de documents</button>
+      <button id="pays-tab-agregateurs" onclick="switchPaysTab('agregateurs')" style="padding:7px 18px;font-size:12px;font-weight:500;border:none;background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font);display:none">Agrégateurs</button>
     </div>
     <div id="pays-list-section">
       <div id="pays-body"><div class="loading">Chargement...</div></div>
@@ -535,6 +546,12 @@ tr:hover td{background:#F1F5F9}
         <button onclick="openUploadModele()" id="btn-add-modele" style="padding:8px 16px;font-size:13px;font-weight:600;border:none;border-radius:var(--r);background:var(--blue4);color:#fff;cursor:pointer;font-family:var(--font)">+ Ajouter un modèle</button>
       </div>
       <div id="modeles-body"><div class="loading">Chargement...</div></div>
+    </div>
+    <div id="pays-agregateurs-section" style="display:none">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:.875rem">
+        <button onclick="openAddAgregateur()" style="padding:8px 16px;font-size:13px;font-weight:600;border:none;border-radius:var(--r);background:var(--blue4);color:#fff;cursor:pointer;font-family:var(--font)">+ Ajouter un agrégateur</button>
+      </div>
+      <div id="agregateurs-body"><div class="loading">Chargement...</div></div>
     </div>
   </div>
 
@@ -722,6 +739,12 @@ tr:hover td{background:#F1F5F9}
       </div>
       <div class="field"><label>URL Ticket</label><input type="text" id="edit-url" placeholder="https://..."/></div>
       <div class="field"><label>Commentaires</label><textarea id="edit-comm" style="resize:none;height:60px;width:100%;padding:7px 10px;font-size:13px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font)"></textarea></div>
+      <div class="field" id="edit-agregateur-row" style="display:none">
+        <label>Agrégateur demandeur</label>
+        <select id="edit-agregateur" style="width:100%;padding:7px 10px;font-size:13px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font)">
+          <option value="">— Aucun (direct) —</option>
+        </select>
+      </div>
 
       <div style="border-top:1px solid var(--border);padding-top:12px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
@@ -833,6 +856,7 @@ const COLORS = {
 
 let allPays = [];
 let allOperateurs = [];
+let allAgregateurs = [];
 let allSenderIds = [];
 let filteredSenderIds = [];
 let listOffset = 0;
@@ -1014,6 +1038,7 @@ async function loadPays() {
       });
     }
     allOperateurs = await api('/api/operateurs');
+    allAgregateurs = await api('/api/agregateurs');
   } catch(err) { console.error('Erreur chargement pays:', err); }
 }
 
@@ -1021,17 +1046,47 @@ async function loadPays() {
 
 let sidBlockCount = 0;
 let formOperateurs = []; // opérateurs du pays sélectionné
+let formAgregateurs = []; // agrégateurs filtrés pour le pays sélectionné
 
 function onFormPaysChange(pays_id) {
   const opsCard = document.getElementById('ops-card');
   const opsBody = document.getElementById('ops-card-body');
-  // Reset sender blocks statuts
   sidBlockCount = 0;
   document.getElementById('sids-container').innerHTML = '';
+
+  // Update aggregateur select at sender level
+  const agrSel = document.getElementById('f-agregateur');
+  if (agrSel) {
+    const _normS = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
+    const _paysObj = allPays.find(p => p._id === pays_id);
+    const _paysNom = _paysObj?.nom || '';
+    formAgregateurs = pays_id
+      ? allAgregateurs.filter(a => (a.pays_couverts||[]).some(pc => _normS(pc.pays) === _normS(_paysNom)))
+      : [];
+    agrSel.innerHTML = '<option value="">— Aucun (direct) —</option>' +
+      formAgregateurs.map(a => `<option value="${a._id?.$oid||a._id?.toString()||a._id}">${a.nom}</option>`).join('');
+    const agrRow = document.getElementById('f-agregateur-row');
+    if (agrRow) agrRow.style.display = pays_id ? '' : 'none';
+  }
+
+  // Country notes banner
+  const notesBanner = document.getElementById('form-pays-notes');
+  if (notesBanner) {
+    const paysObj = allPays.find(p => p._id === pays_id);
+    const notes = paysObj?.prereqs?.communs || [];
+    if (notes.length) {
+      notesBanner.style.display = 'flex';
+      notesBanner.querySelector('#form-pays-notes-list').innerHTML =
+        notes.map(n => `<div style="display:flex;gap:6px;align-items:flex-start"><span style="color:var(--blue4);flex-shrink:0">•</span><span>${n}</span></div>`).join('');
+    } else {
+      notesBanner.style.display = 'none';
+    }
+  }
 
   if (!pays_id) {
     opsCard.style.display = 'none';
     formOperateurs = [];
+    formAgregateurs = [];
     addSenderBlock();
     return;
   }
@@ -1047,7 +1102,6 @@ function onFormPaysChange(pays_id) {
     return;
   }
 
-  // Afficher la liste des opérateurs (info seulement)
   opsCard.style.display = 'block';
   opsBody.innerHTML = formOperateurs.map(op =>
     `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border:1.5px solid var(--border);border-radius:var(--r);background:var(--bg);margin-bottom:5px">
@@ -1078,15 +1132,34 @@ function addSenderBlock() {
   block.style.cssText = 'padding:12px;border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:8px;background:var(--bg)';
 
   // Statuts par opérateur pour ce sender
+  const agrOpts = formAgregateurs.map(a => {
+    const aid = a._id?.$oid || a._id?.toString() || a._id;
+    return `<option value="${aid}">${a.nom}</option>`;
+  }).join('');
   const opStatuts = formOperateurs.map((op, i) => {
     const opts = STATUTS.map(s => `<option value="${s.v}">${s.v}</option>`).join('');
-    return `<div class="op-row wait" id="opr-${idx}-${i}" style="margin-bottom:5px">
+    // Canal row: always shown when a country is selected
+    const canalRow = `
+      <div style="padding:6px 10px 8px;background:var(--bg);border:1.5px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r);margin-bottom:8px">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span style="font-size:10px;color:var(--text3);white-space:nowrap;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Canal</span>
+          <select id="opc-${idx}-${i}" onchange="onCanalChangeBlock(${idx},${i},this)" style="padding:4px 10px;font-size:12px;border:1.5px solid var(--border2);border-radius:6px;background:var(--surface);color:var(--text);font-family:var(--font)">
+            <option value="Direct">Direct</option>
+            <option value="Via agrégateur">Via agrégateur</option>
+          </select>
+          <select id="opa-${idx}-${i}" onchange="onAgregateurChangeBlock(${idx},${i},this)" style="display:none;padding:4px 10px;font-size:12px;border:1.5px solid var(--purple4);border-radius:6px;background:var(--purple50);color:var(--purple);font-family:var(--font)">
+            <option value="">— Choisir un agrégateur —</option>${agrOpts}
+          </select>
+        </div>
+        <div id="opn-${idx}-${i}" style="display:none;margin-top:6px;padding:6px 10px;background:var(--amber50);border:1.5px solid var(--amber4);border-radius:6px;font-size:11px;color:var(--amber)"></div>
+      </div>`;
+    return `<div class="op-row wait" id="opr-${idx}-${i}" style="margin-bottom:0;border-radius:var(--r) var(--r) 0 0">
       <div><div class="op-name">${op.nom}</div><div class="op-meta">MCC: ${op.mcc||'—'} · MNC: ${op.mnc||'—'}</div></div>
       <div class="op-desc">${op.description||''}</div>
       <select class="op-sel" onchange="onStatutChangeBlock(${idx},${i},this)">
         ${opts}
       </select>
-    </div>`;
+    </div>${canalRow}`;
   }).join('');
 
   const mbVal = formOperateurs.length ? '10px' : '0';
@@ -1117,6 +1190,28 @@ function removeSenderBlock(idx) {
 function onStatutChangeBlock(idx, i, sel) {
   const row = document.getElementById('opr-' + idx + '-' + i);
   if (row) row.className = 'op-row ' + getStatClass(sel.value);
+}
+
+function onCanalChangeBlock(idx, i, sel) {
+  const agrSel  = document.getElementById('opa-' + idx + '-' + i);
+  const noteDiv = document.getElementById('opn-' + idx + '-' + i);
+  if (!agrSel) return;
+  const via = sel.value === 'Via agrégateur';
+  agrSel.style.display = via ? '' : 'none';
+  if (!via && noteDiv) { noteDiv.style.display = 'none'; noteDiv.textContent = ''; }
+}
+
+function onAgregateurChangeBlock(idx, i, sel) {
+  const noteDiv = document.getElementById('opn-' + idx + '-' + i);
+  if (!noteDiv) return;
+  if (!sel.value) { noteDiv.style.display = 'none'; noteDiv.textContent = ''; return; }
+  const agr = allAgregateurs.find(a => (a._id?.$oid||a._id?.toString()||a._id) === sel.value);
+  if (agr?.notes) {
+    noteDiv.innerHTML = '<strong>⚠ Contrainte agrégateur :</strong> ' + agr.notes;
+    noteDiv.style.display = 'block';
+  } else {
+    noteDiv.style.display = 'none';
+  }
 }
 
 function validateSidInput(input) {
@@ -1188,10 +1283,14 @@ async function saveEntry() {
     const opRows = block.querySelectorAll('.op-row');
     const operateurs = [...opRows].map((r, i) => {
       const op = formOperateurs[i];
+      const canalSel = document.getElementById(`opc-${idx}-${i}`);
+      const agrSel   = document.getElementById(`opa-${idx}-${i}`);
       return {
         operateur_id: op?._id?.$oid || op?._id?.toString() || op?._id || '',
         nom: r.querySelector('.op-name')?.textContent?.trim() || '',
         statut: r.querySelector('.op-sel')?.value || STATUTS[0].v,
+        canal: canalSel?.value || 'Direct',
+        agregateur_id: (canalSel?.value === 'Via agrégateur' && agrSel?.value) ? agrSel.value : null,
         date_approbation: null
       };
     });
@@ -1216,6 +1315,7 @@ async function saveEntry() {
           nom_client:      client,
           sender_id:       entries[i].sid,
           pays_id,
+          agregateur_id:   document.getElementById('f-agregateur')?.value || null,
           date_demande:    document.getElementById('f-ddem').value || new Date().toISOString(),
           date_soumission: document.getElementById('f-dsub').value || null,
           numero_ticket:   document.getElementById('f-ticket').value.trim(),
@@ -1905,14 +2005,14 @@ async function deleteDoc(id) {
 let allModeles = [];
 
 function switchPaysTab(tab) {
-  const isList = tab === 'list';
-  document.getElementById('pays-list-section').style.display = isList ? 'block' : 'none';
-  document.getElementById('pays-modeles-section').style.display = isList ? 'none' : 'block';
-  document.getElementById('pays-tab-list').style.background = isList ? 'var(--blue4)' : 'transparent';
-  document.getElementById('pays-tab-list').style.color = isList ? '#fff' : 'var(--text2)';
-  document.getElementById('pays-tab-modeles').style.background = isList ? 'transparent' : 'var(--blue4)';
-  document.getElementById('pays-tab-modeles').style.color = isList ? 'var(--text2)' : '#fff';
-  if (!isList && !allModeles.length) loadModeles();
+  ['list','modeles','agregateurs'].forEach(t => {
+    const section = document.getElementById('pays-' + t + '-section');
+    const btn = document.getElementById('pays-tab-' + t);
+    if (section) section.style.display = t === tab ? 'block' : 'none';
+    if (btn) { btn.style.background = t === tab ? 'var(--blue4)' : 'transparent'; btn.style.color = t === tab ? '#fff' : 'var(--text2)'; }
+  });
+  if (tab === 'modeles' && !allModeles.length) loadModeles();
+  if (tab === 'agregateurs') loadAgregateursList();
 }
 
 async function loadPaysPage() {
@@ -2315,20 +2415,59 @@ function openEdit(id) {
   initBtn.style.display = (!e.operateurs?.length && availableOps.length) ? '' : 'none';
   initBtn.dataset.paysId = paysIdStr;
 
-  // Operateurs
+  // Aggregateur select at sender level
+  const editAgrRow = document.getElementById('edit-agregateur-row');
+  const editAgrSel = document.getElementById('edit-agregateur');
+  const _normSe = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
+  const _editPaysObj = allPays.find(p => p._id === paysIdStr);
+  const _editPaysNom = _editPaysObj?.nom || '';
+  const editAgrs = allAgregateurs.filter(a =>
+    (a.pays_couverts||[]).some(pc => _normSe(pc.pays) === _normSe(_editPaysNom))
+  );
+  if (editAgrs.length) {
+    editAgrRow.style.display = '';
+    const currentAgrId = e.agregateur_id?.$oid || e.agregateur_id?.toString() || e.agregateur_id || '';
+    editAgrSel.innerHTML = '<option value="">— Aucun (direct) —</option>' +
+      editAgrs.map(a => {
+        const aid = a._id?.$oid || a._id?.toString() || a._id;
+        return `<option value="${aid}" ${aid === currentAgrId ? 'selected' : ''}>${a.nom}</option>`;
+      }).join('');
+  } else {
+    editAgrRow.style.display = 'none';
+  }
+
+  // Opérateurs
   document.getElementById('edit-ops').innerHTML = (e.operateurs||[]).map((o,i) => {
     const appDate = o.date_approbation ? new Date(o.date_approbation).toISOString().slice(0,10) : '';
-    return `<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;display:grid;grid-template-columns:1fr 160px 130px;gap:8px;align-items:center">
-      <div style="font-size:12px;font-weight:500">${o.nom}</div>
-      <select id="edit-op-statut-${i}" class="inline-sel ${getBadgeClass(o.statut)}"
-        onchange="this.className='inline-sel '+getBadgeClass(this.value)"
-        style="font-size:11px;padding:4px 8px;border-radius:4px;border:1px solid var(--border2);cursor:pointer;font-family:var(--font)">
-        ${STATUTS.map(s => `<option value="${s.v}" ${s.v===o.statut?'selected':''}>${s.v}</option>`).join('')}
-      </select>
-      <div class="field" style="gap:2px">
-        <label style="font-size:10px">Date approbation</label>
-        <input type="date" id="edit-op-appro-${i}" value="${appDate}" style="padding:4px 6px;font-size:11px;border:1px solid var(--border2);border-radius:5px;font-family:var(--font)"/>
-      </div>
+    const opAgrs = editAgrs;
+    const opAgrId = o.agregateur_id?.$oid || o.agregateur_id?.toString() || o.agregateur_id || '';
+    const canalVal = o.canal || 'Direct';
+    const canalRow = opAgrs.length ? `
+      <div style="display:flex;gap:8px;align-items:center;padding-top:6px;border-top:1px dashed var(--border);margin-top:6px">
+        <span style="font-size:10px;color:var(--text3);white-space:nowrap;font-weight:500">Canal :</span>
+        <select id="edit-op-canal-${i}" onchange="document.getElementById('edit-op-agr-${i}').style.display=this.value==='Via agrégateur'?'':'none'"
+          style="padding:3px 8px;font-size:11px;border:1px solid var(--border2);border-radius:5px;background:var(--surface);color:var(--text);font-family:var(--font)">
+          <option value="Direct" ${canalVal==='Direct'?'selected':''}>Direct</option>
+          <option value="Via agrégateur" ${canalVal==='Via agrégateur'?'selected':''}>Via agrégateur</option>
+        </select>
+        <select id="edit-op-agr-${i}" style="display:${canalVal==='Via agrégateur'?'':'none'};padding:3px 8px;font-size:11px;border:1px solid var(--border2);border-radius:5px;background:var(--surface);color:var(--text);font-family:var(--font)">
+          <option value="">— Agrégateur —</option>
+          ${opAgrs.map(a => {const aid=a._id?.$oid||a._id?.toString()||a._id;return `<option value="${aid}" ${aid===opAgrId?'selected':''}>${a.nom}</option>`;}).join('')}
+        </select>
+      </div>` : '';
+    return `<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;margin-bottom:6px">
+      <div style="display:grid;grid-template-columns:1fr 160px 130px;gap:8px;align-items:center">
+        <div style="font-size:12px;font-weight:500">${o.nom}</div>
+        <select id="edit-op-statut-${i}" class="inline-sel ${getBadgeClass(o.statut)}"
+          onchange="this.className='inline-sel '+getBadgeClass(this.value)"
+          style="font-size:11px;padding:4px 8px;border-radius:4px;border:1px solid var(--border2);cursor:pointer;font-family:var(--font)">
+          ${STATUTS.map(s => `<option value="${s.v}" ${s.v===o.statut?'selected':''}>${s.v}</option>`).join('')}
+        </select>
+        <div class="field" style="gap:2px">
+          <label style="font-size:10px">Date approbation</label>
+          <input type="date" id="edit-op-appro-${i}" value="${appDate}" style="padding:4px 6px;font-size:11px;border:1px solid var(--border2);border-radius:5px;font-family:var(--font)"/>
+        </div>
+      </div>${canalRow}
     </div>`;
   }).join('');
 
@@ -2356,23 +2495,53 @@ function initEditOps() {
     operateur_id: op._id,
     nom: op.nom,
     statut: 'En cours de traitement',
+    canal: 'Direct',
+    agregateur_id: null,
     date_approbation: null
   }));
   // Réafficher le modal avec les opérateurs
   document.getElementById('edit-init-ops-btn').style.display = 'none';
-  document.getElementById('edit-ops').innerHTML = e.operateurs.map((o,i) => `
-    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;display:grid;grid-template-columns:1fr 160px 130px;gap:8px;align-items:center">
-      <div style="font-size:12px;font-weight:500">${o.nom}</div>
-      <select id="edit-op-statut-${i}" class="inline-sel ${getBadgeClass(o.statut)}"
-        onchange="this.className='inline-sel '+getBadgeClass(this.value)"
-        style="font-size:11px;padding:4px 8px;border-radius:4px;border:1px solid var(--border2);cursor:pointer;font-family:var(--font)">
-        ${STATUTS.map(s => `<option value="${s.v}" ${s.v===o.statut?'selected':''}>${s.v}</option>`).join('')}
-      </select>
-      <div class="field" style="gap:2px">
-        <label style="font-size:10px">Date approbation</label>
-        <input type="date" id="edit-op-appro-${i}" style="padding:4px 6px;font-size:11px;border:1px solid var(--border2);border-radius:5px;font-family:var(--font)"/>
-      </div>
-    </div>`).join('');
+  const _normSi = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
+  const _initPaysId = e.pays_id?.$oid || e.pays_id?.toString() || e.pays_id;
+  const _initPaysObj = allPays.find(p => p._id === _initPaysId);
+  const _initPaysNom = _initPaysObj?.nom || '';
+  const initAgrs = allAgregateurs.filter(a =>
+    (a.pays_couverts||[]).some(pc => _normSi(pc.pays) === _normSi(_initPaysNom))
+  );
+  document.getElementById('edit-ops').innerHTML = e.operateurs.map((o,i) => {
+    const oCanalVal = o.canal || 'Direct';
+    const oAgrId = o.agregateur_id?.$oid || o.agregateur_id?.toString() || o.agregateur_id || '';
+    const agrOpts = initAgrs.map(a => {
+      const aid=a._id?.$oid||a._id?.toString()||a._id;
+      return `<option value="${aid}" ${aid===oAgrId?'selected':''}>${a.nom}</option>`;
+    }).join('');
+    const canalRow = `
+      <div style="display:flex;gap:8px;align-items:center;padding-top:6px;border-top:1px dashed var(--border);margin-top:6px">
+        <span style="font-size:10px;color:var(--text3);white-space:nowrap;font-weight:500">Canal :</span>
+        <select id="edit-op-canal-${i}" onchange="document.getElementById('edit-op-agr-${i}').style.display=this.value==='Via agrégateur'?'':'none'"
+          style="padding:3px 8px;font-size:11px;border:1px solid var(--border2);border-radius:5px;background:var(--surface);color:var(--text);font-family:var(--font)">
+          <option value="Direct" ${oCanalVal==='Direct'?'selected':''}>Direct</option>
+          <option value="Via agrégateur" ${oCanalVal==='Via agrégateur'?'selected':''}>Via agrégateur</option>
+        </select>
+        <select id="edit-op-agr-${i}" style="display:${oCanalVal==='Via agrégateur'?'':'none'};padding:3px 8px;font-size:11px;border:1px solid var(--border2);border-radius:5px;background:var(--surface);color:var(--text);font-family:var(--font)">
+          <option value="">— Agrégateur —</option>${agrOpts}
+        </select>
+      </div>`;
+    return `<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;margin-bottom:6px">
+      <div style="display:grid;grid-template-columns:1fr 160px 130px;gap:8px;align-items:center">
+        <div style="font-size:12px;font-weight:500">${o.nom}</div>
+        <select id="edit-op-statut-${i}" class="inline-sel ${getBadgeClass(o.statut)}"
+          onchange="this.className='inline-sel '+getBadgeClass(this.value)"
+          style="font-size:11px;padding:4px 8px;border-radius:4px;border:1px solid var(--border2);cursor:pointer;font-family:var(--font)">
+          ${STATUTS.map(s => `<option value="${s.v}" ${s.v===o.statut?'selected':''}>${s.v}</option>`).join('')}
+        </select>
+        <div class="field" style="gap:2px">
+          <label style="font-size:10px">Date approbation</label>
+          <input type="date" id="edit-op-appro-${i}" style="padding:4px 6px;font-size:11px;border:1px solid var(--border2);border-radius:5px;font-family:var(--font)"/>
+        </div>
+      </div>${canalRow}
+    </div>`;
+  }).join('');
 }
 
 async function saveEdit() {
@@ -2382,12 +2551,18 @@ async function saveEdit() {
   const btn = document.getElementById('edit-save-btn');
   btn.disabled = true; btn.textContent = 'Enregistrement...';
 
-  const operateurs = (e.operateurs||[]).map((o,i) => ({
-    operateur_id: o.operateur_id?.$oid || o.operateur_id?.toString() || o.operateur_id,
-    nom: o.nom,
-    statut: document.getElementById(`edit-op-statut-${i}`)?.value || o.statut,
-    date_approbation: document.getElementById(`edit-op-appro-${i}`)?.value || null
-  }));
+  const operateurs = (e.operateurs||[]).map((o,i) => {
+    const canalSel = document.getElementById(`edit-op-canal-${i}`);
+    const agrSel   = document.getElementById(`edit-op-agr-${i}`);
+    return {
+      operateur_id: o.operateur_id?.$oid || o.operateur_id?.toString() || o.operateur_id,
+      nom: o.nom,
+      statut: document.getElementById(`edit-op-statut-${i}`)?.value || o.statut,
+      canal: canalSel?.value || o.canal || 'Direct',
+      agregateur_id: (canalSel?.value === 'Via agrégateur' && agrSel?.value) ? agrSel.value : null,
+      date_approbation: document.getElementById(`edit-op-appro-${i}`)?.value || null
+    };
+  });
 
   try {
     await api(`/api/sender-ids/${id}`, {
@@ -2400,6 +2575,7 @@ async function saveEdit() {
         commentaires:    document.getElementById('edit-comm').value.trim(),
         date_demande:    document.getElementById('edit-ddem').value || null,
         date_soumission: document.getElementById('edit-dsub').value || null,
+        agregateur_id:   document.getElementById('edit-agregateur')?.value || null,
         operateurs
       })
     });
@@ -2507,14 +2683,21 @@ function openDetail(id) {
 
   document.getElementById('detail-ops').innerHTML = (e.operateurs||[]).map(o => {
     const appDate = o.date_approbation ? new Date(o.date_approbation).toLocaleDateString('fr-FR') : null;
-    return `<div style="display:grid;grid-template-columns:1fr 140px 130px;gap:8px;align-items:center;padding:8px 12px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg)">
-      <div>
-        <div style="font-size:12px;font-weight:500">${o.nom}</div>
-        <div style="font-size:10px;color:var(--text3);font-family:var(--mono)">MCC/MNC</div>
-      </div>
-      <span class="badge ${getBadgeClass(o.statut)}">${o.statut}</span>
-      <div style="font-size:11px;color:var(--text2)">
-        ${appDate ? `<div>Approb: ${appDate}</div>` : '<div style="color:var(--text3)">Pas encore approuvé</div>'}
+    let canalInfo = '';
+    if (o.canal === 'Via agrégateur') {
+      const agrObj = allAgregateurs.find(a => {const aid=a._id?.$oid||a._id?.toString()||a._id; const oid=o.agregateur_id?.$oid||o.agregateur_id?.toString()||o.agregateur_id; return aid===oid;});
+      canalInfo = `<div style="font-size:10px;margin-top:3px;color:var(--purple);background:var(--purple50);border-radius:4px;padding:2px 6px;display:inline-block">Via ${agrObj?.nom||'agrégateur'}</div>`;
+    }
+    return `<div style="padding:8px 12px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);margin-bottom:4px">
+      <div style="display:grid;grid-template-columns:1fr 140px 130px;gap:8px;align-items:center">
+        <div>
+          <div style="font-size:12px;font-weight:500">${o.nom}</div>
+          ${canalInfo}
+        </div>
+        <span class="badge ${getBadgeClass(o.statut)}">${o.statut}</span>
+        <div style="font-size:11px;color:var(--text2)">
+          ${appDate ? `<div>Approb: ${appDate}</div>` : '<div style="color:var(--text3)">Pas encore approuvé</div>'}
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -2626,6 +2809,7 @@ function applyUserUI(user) {
     document.getElementById('mtab-admin').style.display = '';
     document.getElementById('tab-activity').style.display = '';
     document.getElementById('mtab-activity').style.display = '';
+    document.getElementById('pays-tab-agregateurs').style.display = '';
   }
   if (user.role === 'viewer') {
     window.__viewerMode = true;
@@ -2712,6 +2896,126 @@ async function deleteUser(id) {
   if (!confirm('Supprimer cet utilisateur ? Cette action est irréversible.')) return;
   try { await api(`/api/admin/users/${id}`, { method:'DELETE' }); await loadAdminUsers(); }
   catch(e) { alert(e.message); }
+}
+
+// ─── AGRÉGATEURS (admin) ─────────────────────────────────────────────────────
+
+async function loadAgregateursList() {
+  const body = document.getElementById('agregateurs-body');
+  body.innerHTML = '<div class="loading">Chargement...</div>';
+  try {
+    allAgregateurs = await api('/api/agregateurs');
+    if (!allAgregateurs.length) {
+      body.innerHTML = '<div class="loading">Aucun agrégateur — cliquez sur "+ Ajouter"</div>';
+      return;
+    }
+    body.innerHTML = allAgregateurs.map(a => {
+      const aid = a._id?.$oid || a._id?.toString() || a._id;
+      const paysNoms = (a.pays_couverts || []).map(pc => pc.pays).join(', ');
+      return `<div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rl);padding:14px 16px;margin-bottom:8px;display:flex;align-items:flex-start;gap:14px;box-shadow:var(--shadow-sm)">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:600;margin-bottom:3px">${a.nom}</div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Pays : ${paysNoms||'Tous'}</div>
+          ${a.contact ? `<div style="font-size:11px;color:var(--text2);margin-bottom:3px">Contact : ${a.contact}</div>` : ''}
+          ${a.notes ? `<div style="font-size:11px;color:var(--text2);background:var(--amber50);border-radius:4px;padding:4px 8px;border:1px solid #FCD34D">${a.notes}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button onclick="openEditAgregateur('${aid}')" style="padding:5px 12px;font-size:11px;font-weight:600;border:1px solid var(--blue4);border-radius:6px;background:transparent;color:var(--blue);cursor:pointer;font-family:var(--font)">Modifier</button>
+          <button onclick="deleteAgregateur('${aid}')" style="padding:5px 12px;font-size:11px;font-weight:600;border:1px solid #FCA5A5;border-radius:6px;background:var(--red50);color:var(--red);cursor:pointer;font-family:var(--font)">Suppr.</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { body.innerHTML = `<div class="error-msg">${e.message}</div>`; }
+}
+
+let _agrSaveCallback = null;
+
+function _agrModal(title, agr) {
+  document.getElementById('agr-modal')?.remove();
+  const modal = document.createElement('div');
+  modal.id = 'agr-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;display:flex;align-items:center;justify-content:center;padding:1rem';
+  const _normSm = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
+  const paysOptions = allPays.map(p => {
+    const selected = (agr?.pays_couverts || []).some(pc => _normSm(pc.pays) === _normSm(p.nom)) ? 'selected' : '';
+    return `<option value="${p.nom}" ${selected}>${p.nom}</option>`;
+  }).join('');
+  modal.innerHTML = `<div style="background:var(--surface);border-radius:var(--rl);width:100%;max-width:480px;overflow:hidden" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1.5px solid var(--border);background:var(--bg)">
+      <div style="font-size:15px;font-weight:600">${title}</div>
+      <button onclick="document.getElementById('agr-modal').remove()" style="padding:5px 12px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font)">Annuler</button>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:12px">
+      <div class="field"><label>Nom *</label><input type="text" id="agr-nom" value="${agr?.nom||''}" placeholder="Ex: Orange Aggregation Hub"/></div>
+      <div class="field">
+        <label>Pays couverts</label>
+        <select id="agr-pays" multiple style="height:120px;padding:6px;font-size:13px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font)">${paysOptions}</select>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px">Ctrl+clic pour sélectionner plusieurs</div>
+      </div>
+      <div class="field"><label>Contact (email ou URL)</label><input type="text" id="agr-contact" value="${agr?.contact||''}" placeholder="contact@agregateur.com"/></div>
+      <div class="field"><label>Notes / contraintes</label><textarea id="agr-notes" style="resize:none;height:64px;width:100%;padding:7px 10px;font-size:13px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font)">${agr?.notes||''}</textarea></div>
+      <div id="agr-err" style="display:none;padding:8px 12px;background:var(--red50);border:1px solid #FCA5A5;border-radius:var(--r);font-size:12px;color:var(--red)"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:12px">
+        <button onclick="document.getElementById('agr-modal').remove()" style="padding:8px 16px;font-size:13px;font-weight:500;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font)">Annuler</button>
+        <button id="agr-save-btn" onclick="_agrSaveCallback && _agrSaveCallback()" style="padding:8px 18px;font-size:13px;font-weight:600;border:none;border-radius:var(--r);background:var(--blue4);color:#fff;cursor:pointer;font-family:var(--font)">Enregistrer</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+function _agrFormData() {
+  const nom = document.getElementById('agr-nom').value.trim();
+  const pays_noms = [...document.getElementById('agr-pays').selectedOptions].map(o => o.value);
+  const contact = document.getElementById('agr-contact').value.trim();
+  const notes   = document.getElementById('agr-notes').value.trim();
+  return { nom, pays_noms, contact, notes };
+}
+
+function openAddAgregateur() {
+  _agrModal('Ajouter un agrégateur', null);
+  _agrSaveCallback = async function() {
+    const data = _agrFormData();
+    if (!data.nom) { document.getElementById('agr-err').textContent='Nom requis';document.getElementById('agr-err').style.display='block';return; }
+    const btn = document.getElementById('agr-save-btn');
+    btn.disabled = true; btn.textContent = 'Enregistrement...';
+    try {
+      await api('/api/agregateurs', { method:'POST', body: JSON.stringify(data) });
+      document.getElementById('agr-modal').remove();
+      allAgregateurs = await api('/api/agregateurs');
+      loadAgregateursList();
+      showToast('Agrégateur ajouté');
+    } catch(e) { document.getElementById('agr-err').textContent=e.message;document.getElementById('agr-err').style.display='block'; btn.disabled=false; btn.textContent='Enregistrer'; }
+  };
+}
+
+function openEditAgregateur(id) {
+  const agr = allAgregateurs.find(a => (a._id?.$oid||a._id?.toString()||a._id) === id);
+  if (!agr) return;
+  _agrModal('Modifier l\'agrégateur', agr);
+  _agrSaveCallback = async function() {
+    const data = _agrFormData();
+    if (!data.nom) { document.getElementById('agr-err').textContent='Nom requis';document.getElementById('agr-err').style.display='block';return; }
+    const btn = document.getElementById('agr-save-btn');
+    btn.disabled = true; btn.textContent = 'Enregistrement...';
+    try {
+      await api(`/api/agregateurs/${id}`, { method:'PUT', body: JSON.stringify(data) });
+      document.getElementById('agr-modal').remove();
+      allAgregateurs = await api('/api/agregateurs');
+      loadAgregateursList();
+      showToast('Agrégateur mis à jour');
+    } catch(e) { document.getElementById('agr-err').textContent=e.message;document.getElementById('agr-err').style.display='block'; btn.disabled=false; btn.textContent='Enregistrer'; }
+  };
+}
+
+async function deleteAgregateur(id) {
+  if (!confirm('Supprimer cet agrégateur ?')) return;
+  try {
+    await api(`/api/agregateurs/${id}`, { method:'DELETE' });
+    allAgregateurs = allAgregateurs.filter(a => (a._id?.$oid||a._id?.toString()||a._id) !== id);
+    loadAgregateursList();
+    showToast('Agrégateur supprimé');
+  } catch(e) { showToast(e.message, 'error'); }
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
