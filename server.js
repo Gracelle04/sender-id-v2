@@ -48,7 +48,9 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 
 // ─── EMAIL ────────────────────────────────────────────────────────────────────
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+  port: parseInt(process.env.SMTP_PORT, 10) || 587,
+  secure: false,
   auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
 });
 
