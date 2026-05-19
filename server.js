@@ -23,7 +23,11 @@ const PORT        = process.env.PORT        || 3000;
 const JWT_SECRET  = process.env.JWT_SECRET  || 'sender_id_jwt_secret_change_me';
 const APP_URL     = process.env.APP_URL     || `http://localhost:${PORT}`;
 
-// ─── CLOUDINARY ───────────────────────────────────────────────────────────────
+// ─── MINIO ────────────────────────────────────────────────────────────────────
+
+const minio = require('./lib/minio');
+
+// ─── CLOUDINARY (lecture legacy — ne plus uploader ici) ───────────────────────
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -31,15 +35,6 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
   secure:     true
 });
-
-function uploadToCloudinary(buffer, options) {
-  return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(options, (err, result) => {
-      if (err) reject(err); else resolve(result);
-    });
-    Readable.from(buffer).pipe(stream);
-  });
-}
 
 async function deleteFromCloudinary(public_id) {
   try { await cloudinary.uploader.destroy(public_id, { resource_type: 'raw' }); }
@@ -124,6 +119,7 @@ async function connectDB() {
   await db.collection('activity_logs').createIndex({ timestamp: -1 });
   await db.collection('activity_logs').createIndex({ user_email: 1 });
   await db.collection('agregateurs').createIndex({ nom: 1 });
+  await minio.ensureBucket();
 
   // Compte admin par défaut
   const adminExists = await db.collection('users').findOne({ role: 'admin' });
@@ -571,20 +567,24 @@ app.get('/api/documents', async (req, res) => {
     const query = {};
     if (req.query.nom_client) query.nom_client = req.query.nom_client;
     if (req.query.type)       query.type = req.query.type;
-    res.json(await db.collection('documents').find(query).sort({ created_at: -1 }).toArray());
+    const docs = await db.collection('documents').find(query).sort({ created_at: -1 }).toArray();
+    await Promise.all(docs.map(async d => {
+      if (d.minio_key) d.chemin = await minio.getUrl(d.minio_key);
+    }));
+    res.json(docs);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.post('/api/documents', writeRequired, upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'Aucun fichier reçu' });
+    const ext      = path.extname(req.file.originalname);
     const baseName = req.file.originalname.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_');
-    const result = await uploadToCloudinary(req.file.buffer, {
-      folder: 'sender-id/documents', public_id: `${baseName}_${Date.now()}`, resource_type: 'raw'
-    });
+    const key      = `documents/${baseName}_${Date.now()}${ext}`;
+    const chemin   = await minio.upload(key, Readable.from(req.file.buffer), req.file.size, req.file.mimetype);
     const doc = {
       nom_original: req.body.nom_original || req.file.originalname,
-      cloudinary_id: result.public_id, chemin: result.secure_url,
+      minio_key: key, chemin,
       type: req.body.type || 'Autre', nom_client: req.body.nom_client || '',
       taille: req.file.size, mimetype: req.file.mimetype,
       commentaire: req.body.commentaire || '', created_at: new Date()
@@ -598,6 +598,7 @@ app.delete('/api/documents/:id', writeRequired, async (req, res) => {
   try {
     const doc = await db.collection('documents').findOne({ _id: new ObjectId(req.params.id) });
     if (doc) {
+      if (doc.minio_key)     await minio.remove(doc.minio_key).catch(() => {});
       if (doc.cloudinary_id) await deleteFromCloudinary(doc.cloudinary_id);
       await db.collection('documents').deleteOne({ _id: new ObjectId(req.params.id) });
     }
@@ -608,20 +609,25 @@ app.delete('/api/documents/:id', writeRequired, async (req, res) => {
 // ─── MODÈLES ──────────────────────────────────────────────────────────────────
 
 app.get('/api/modeles', async (req, res) => {
-  try { res.json(await db.collection('modeles').find({}).sort({ created_at: -1 }).toArray()); }
-  catch (e) { res.status(500).json({ error: e.message }); }
+  try {
+    const modeles = await db.collection('modeles').find({}).sort({ created_at: -1 }).toArray();
+    await Promise.all(modeles.map(async m => {
+      if (m.minio_key) m.chemin = await minio.getUrl(m.minio_key);
+    }));
+    res.json(modeles);
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.post('/api/modeles', writeRequired, upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'Aucun fichier reçu' });
+    const extM      = path.extname(req.file.originalname);
     const baseNameM = req.file.originalname.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_');
-    const result = await uploadToCloudinary(req.file.buffer, {
-      folder: 'sender-id/modeles', public_id: `${baseNameM}_${Date.now()}`, resource_type: 'raw'
-    });
+    const keyM      = `modeles/${baseNameM}_${Date.now()}${extM}`;
+    const cheminM   = await minio.upload(keyM, Readable.from(req.file.buffer), req.file.size, req.file.mimetype);
     const modele = {
-      nom: req.body.nom || req.file.originalname, cloudinary_id: result.public_id,
-      chemin: result.secure_url, description: req.body.description || '',
+      nom: req.body.nom || req.file.originalname, minio_key: keyM,
+      chemin: cheminM, description: req.body.description || '',
       version: req.body.version || 'v1.0', pays: req.body.pays || '',
       taille: req.file.size, mimetype: req.file.mimetype,
       created_at: new Date(), updated_at: new Date()
@@ -635,6 +641,7 @@ app.delete('/api/modeles/:id', writeRequired, async (req, res) => {
   try {
     const m = await db.collection('modeles').findOne({ _id: new ObjectId(req.params.id) });
     if (m) {
+      if (m.minio_key)     await minio.remove(m.minio_key).catch(() => {});
       if (m.cloudinary_id) await deleteFromCloudinary(m.cloudinary_id);
       await db.collection('modeles').deleteOne({ _id: new ObjectId(req.params.id) });
     }
