@@ -469,6 +469,7 @@ app.post('/api/sender-ids', writeRequired, async (req, res) => {
     const doc = {
       ...req.body, pays_id: new ObjectId(req.body.pays_id),
       agregateur_id: req.body.agregateur_id ? new ObjectId(req.body.agregateur_id) : null,
+      client_final: req.body.client_final || null,
       notifie: false, date_notification: null,
       created_at: new Date(), updated_at: new Date(),
       operateurs: (req.body.operateurs || []).map(op => ({
@@ -492,6 +493,7 @@ app.put('/api/sender-ids/:id', writeRequired, async (req, res) => {
       date_demande: req.body.date_demande || null,
       date_soumission: req.body.date_soumission || null,
       agregateur_id: req.body.agregateur_id ? new ObjectId(req.body.agregateur_id) : null,
+      client_final: req.body.client_final || null,
       updated_at: new Date()
     };
     if (req.body.operateurs) {

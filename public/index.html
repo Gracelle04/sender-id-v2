@@ -320,7 +320,23 @@ tr:hover td{background:#F1F5F9}
     <div class="card">
       <div class="clabel">Informations client</div>
       <div class="g2">
-        <div class="field"><label>Nom du client *</label><input type="text" id="f-client" placeholder="Ex: Wave Mobile Money" list="clients-datalist" autocomplete="off"/><datalist id="clients-datalist"></datalist></div>
+        <div class="field" style="grid-column:1/-1">
+          <label>Demandeur *</label>
+          <div style="display:flex;gap:6px;margin-bottom:8px">
+            <button type="button" id="f-btn-direct" onclick="onClientTypeChange('direct')"
+              style="padding:4px 14px;font-size:12px;font-weight:600;border:1.5px solid var(--blue4);border-radius:6px;background:var(--blue4);color:#fff;cursor:pointer;font-family:var(--font)">Direct</button>
+            <button type="button" id="f-btn-agr" onclick="onClientTypeChange('agr')"
+              style="padding:4px 14px;font-size:12px;font-weight:600;border:1.5px solid var(--border2);border-radius:6px;background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font)">Via agrégateur</button>
+          </div>
+          <input type="text" id="f-client" placeholder="Ex: Wave Mobile Money" list="clients-datalist" autocomplete="off"/>
+          <div id="f-agr-wrap" style="display:none;flex-direction:column;gap:6px;margin-top:2px">
+            <select id="f-client-agr">
+              <option value="">— Choisir un agrégateur —</option>
+            </select>
+            <input type="text" id="f-client-final" placeholder="Client final (optionnel) — ex: Wave Mobile Money"/>
+          </div>
+          <datalist id="clients-datalist"></datalist>
+        </div>
         <div class="field"><label>N° Ticket</label><input type="text" id="f-ticket" placeholder="TKT-XXXX"/></div>
       </div>
       <div class="g3">
@@ -729,7 +745,11 @@ tr:hover td{background:#F1F5F9}
       <input type="hidden" id="edit-id"/>
       
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="field"><label>Nom du client</label><input type="text" id="edit-client" placeholder="Nom du client"/></div>
+        <div class="field">
+          <label>Nom du client</label>
+          <input type="text" id="edit-client" placeholder="Nom du client"/>
+          <input type="text" id="edit-client-final" placeholder="Client final (si agrégateur) — optionnel" style="margin-top:5px;font-size:12px;color:var(--purple);font-style:italic"/>
+        </div>
         <div class="field"><label>Sender ID</label><input type="text" id="edit-sid" placeholder="Ex: WAVEMONEY" maxlength="11"/></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
@@ -788,6 +808,7 @@ tr:hover td{background:#F1F5F9}
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1.5px solid var(--border);background:var(--bg)">
       <div>
         <div style="font-size:15px;font-weight:500" id="detail-title">—</div>
+        <div style="font-size:11px;color:var(--purple);margin-top:2px;font-style:italic" id="detail-client-final" style="display:none"></div>
         <div style="font-size:12px;color:var(--text2);margin-top:2px;font-family:var(--mono)" id="detail-sid">—</div>
       </div>
       <button onclick="closeDetail()" style="padding:6px 12px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font)">Fermer</button>
@@ -1234,6 +1255,50 @@ function validateSidInput(input) {
   }
 }
 
+let _clientType = 'direct';
+
+function onClientTypeChange(type) {
+  _clientType = type;
+  const isDirect = type === 'direct';
+  document.getElementById('f-client').style.display = isDirect ? '' : 'none';
+  const wrap = document.getElementById('f-agr-wrap');
+  wrap.style.display = isDirect ? 'none' : 'flex';
+  if (!isDirect) {
+    document.getElementById('f-client-agr').innerHTML =
+      '<option value="">— Choisir un agrégateur —</option>' +
+      allAgregateurs.map(a => `<option value="${a._id?.$oid||a._id?.toString()||a._id}" data-nom="${a.nom}">${a.nom}</option>`).join('');
+  }
+  const agrRow = document.getElementById('f-agregateur-row');
+  if (agrRow) agrRow.style.display = isDirect && document.getElementById('f-pays').value ? '' : 'none';
+
+  const btnD = document.getElementById('f-btn-direct');
+  const btnA = document.getElementById('f-btn-agr');
+  btnD.style.background   = isDirect ? 'var(--blue4)' : 'transparent';
+  btnD.style.color        = isDirect ? '#fff' : 'var(--text2)';
+  btnD.style.borderColor  = isDirect ? 'var(--blue4)' : 'var(--border2)';
+  btnA.style.background   = !isDirect ? 'var(--blue4)' : 'transparent';
+  btnA.style.color        = !isDirect ? '#fff' : 'var(--text2)';
+  btnA.style.borderColor  = !isDirect ? 'var(--blue4)' : 'var(--border2)';
+}
+
+function getClientValue() {
+  if (_clientType === 'agr') {
+    const sel = document.getElementById('f-client-agr');
+    return sel?.selectedOptions[0]?.dataset.nom || sel?.value || '';
+  }
+  return document.getElementById('f-client')?.value.trim() || '';
+}
+
+function getFormAgregateurId() {
+  if (_clientType === 'agr') return document.getElementById('f-client-agr')?.value || null;
+  return document.getElementById('f-agregateur')?.value || null;
+}
+
+function getFormClientFinal() {
+  if (_clientType === 'agr') return document.getElementById('f-client-final')?.value.trim() || null;
+  return null;
+}
+
 function updateClientDatalist() {
   const dl = document.getElementById('clients-datalist');
   if (!dl) return;
@@ -1260,7 +1325,7 @@ function addSenderForClient(clientName, paysId) {
 }
 
 async function saveEntry() {
-  const client = document.getElementById('f-client').value.trim();
+  const client = getClientValue();
   const pays_id = document.getElementById('f-pays').value;
 
   if (!client || !pays_id) {
@@ -1313,9 +1378,10 @@ async function saveEntry() {
         method: 'POST',
         body: JSON.stringify({
           nom_client:      client,
+          client_final:    getFormClientFinal(),
           sender_id:       entries[i].sid,
           pays_id,
-          agregateur_id:   document.getElementById('f-agregateur')?.value || null,
+          agregateur_id:   getFormAgregateurId(),
           date_demande:    document.getElementById('f-ddem').value || new Date().toISOString(),
           date_soumission: document.getElementById('f-dsub').value || null,
           numero_ticket:   document.getElementById('f-ticket').value.trim(),
@@ -1330,6 +1396,8 @@ async function saveEntry() {
       const el = document.getElementById(id);
       if (el) el.value = '';
     });
+    document.getElementById('f-client-final') && (document.getElementById('f-client-final').value = '');
+    onClientTypeChange('direct');
     document.getElementById('f-pays').value = '';
     document.getElementById('ops-card').style.display = 'none';
     document.getElementById('sids-container').innerHTML = '';
@@ -1680,6 +1748,7 @@ function renderList() {
         const cPaysId = e.pays_id?.$oid || e.pays_id?.toString() || e.pays_id || '';
         clientCell = `<td style="font-weight:600;vertical-align:top;padding-top:12px;border-right:1.5px solid var(--border)" rowspan="${total}">
           <span style="cursor:pointer;color:var(--blue);text-decoration:underline;text-underline-offset:2px" onclick="openDetail('${e._id}')">${e.nom_client}</span>
+          ${e.client_final ? `<div style="font-size:10px;color:var(--purple);font-style:italic;margin-top:2px">pour ${e.client_final}</div>` : ''}
           <div style="margin-top:6px;display:inline-flex;align-items:center;padding:2px 9px;background:var(--blue50);border:1.5px solid var(--blueb);border-radius:20px;font-size:10px;font-weight:700;color:var(--blue)">
             ${total} Sender${total > 1 ? ' IDs' : ' ID'}
           </div>
@@ -2390,6 +2459,7 @@ function openEdit(id) {
   document.getElementById('edit-id').value = id;
   document.getElementById('edit-subtitle').textContent = e.nom_client + ' — ' + e.sender_id;
   document.getElementById('edit-client').value = e.nom_client || '';
+  document.getElementById('edit-client-final').value = e.client_final || '';
   document.getElementById('edit-sid').value = e.sender_id || '';
   document.getElementById('edit-ticket').value = e.numero_ticket || '';
   document.getElementById('edit-url').value = e.url_ticket || '';
@@ -2569,6 +2639,7 @@ async function saveEdit() {
       method: 'PUT',
       body: JSON.stringify({
         nom_client:      document.getElementById('edit-client').value.trim(),
+        client_final:    document.getElementById('edit-client-final').value.trim() || null,
         sender_id:       document.getElementById('edit-sid').value.trim(),
         numero_ticket:   document.getElementById('edit-ticket').value.trim(),
         url_ticket:      document.getElementById('edit-url').value.trim(),
@@ -2582,6 +2653,7 @@ async function saveEdit() {
     // Update local data
     Object.assign(e, {
       nom_client:      document.getElementById('edit-client').value.trim(),
+      client_final:    document.getElementById('edit-client-final').value.trim() || null,
       sender_id:       document.getElementById('edit-sid').value.trim(),
       numero_ticket:   document.getElementById('edit-ticket').value.trim(),
       url_ticket:      document.getElementById('edit-url').value.trim(),
@@ -2661,7 +2733,17 @@ function exportExcel() {
 function openDetail(id) {
   const e = allSenderIds.find(x => x._id === id);
   if (!e) return;
+  const agrClientId = e.agregateur_id?.$oid || e.agregateur_id?.toString() || e.agregateur_id;
+  const agrClientObj = agrClientId ? allAgregateurs.find(a => (a._id?.$oid||a._id?.toString()||a._id) === agrClientId) : null;
+  const isViaAgr = agrClientObj && e.nom_client === agrClientObj.nom;
   document.getElementById('detail-title').textContent = e.nom_client;
+  const detailSubEl = document.getElementById('detail-client-final');
+  if (detailSubEl) {
+    if (isViaAgr && e.client_final) {
+      detailSubEl.style.display = '';
+      detailSubEl.textContent = 'pour ' + e.client_final;
+    } else { detailSubEl.style.display = 'none'; }
+  }
   document.getElementById('detail-sid').textContent = e.sender_id;
   document.getElementById('detail-pays').textContent = e.pays_nom || '—';
   document.getElementById('detail-ticket').textContent = e.numero_ticket || '—';
