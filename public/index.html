@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Suivi Sender ID — Afrique Ouest & Centrale</title>
+<link rel="icon" type="image/png" href="/lamlogo.png"/>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
@@ -1282,12 +1283,12 @@ async function checkSidDuplicate(input) {
     if (!r.ok) return;
     const data = await r.json();
     if (data.exists) {
-      dupDiv.textContent = `⚠ Ce Sender ID existe déjà pour ce pays (client : ${data.entry.nom_client || '—'})`;
+      dupDiv.textContent = `⚠ Ce Sender ID existe déjà pour ce pays (client : ${data.entry.nom_client || '—'}) — vous pouvez quand même enregistrer.`;
       dupDiv.style.display = '';
     } else {
       dupDiv.style.display = 'none';
     }
-  } catch { dupDiv.style.display = 'none'; }
+  } catch(err) { dupDiv.style.display = 'none'; }
 }
 
 async function checkEditSidDuplicate() {
@@ -1306,16 +1307,17 @@ async function checkEditSidDuplicate() {
     if (!r.ok) return;
     const data = await r.json();
     if (data.exists) {
-      dupDiv.textContent = `⚠ Ce Sender ID existe déjà pour ce pays (client : ${data.entry.nom_client || '—'})`;
+      dupDiv.textContent = `⚠ Ce Sender ID existe déjà pour ce pays (client : ${data.entry.nom_client || '—'}) — vous pouvez quand même enregistrer.`;
       dupDiv.style.display = '';
     } else {
       dupDiv.style.display = 'none';
     }
-  } catch { dupDiv.style.display = 'none'; }
+  } catch(err) { dupDiv.style.display = 'none'; }
 }
 
 let _clientType = 'direct';
 let _editClientType = 'direct';
+let _currentEditEntry = null;
 
 function onEditClientType(type) {
   _editClientType = type;
@@ -2540,6 +2542,9 @@ function renderLookup() {
 function openEdit(id) {
   const e = allSenderIds.find(x => x._id === id);
   if (!e) return;
+  _currentEditEntry = e;
+  const saveBtn = document.getElementById('edit-save-btn');
+  if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Enregistrer les modifications'; }
   document.getElementById('edit-id').value = id;
   document.getElementById('edit-subtitle').textContent = e.nom_client + ' — ' + e.sender_id;
   // Detect Direct vs Via agrégateur
@@ -2645,13 +2650,14 @@ function openEdit(id) {
 }
 
 function closeEdit() {
+  _currentEditEntry = null;
   document.getElementById('edit-overlay').style.display = 'none';
   document.body.style.overflow = '';
 }
 
 function initEditOps() {
   const id = document.getElementById('edit-id').value;
-  const e = allSenderIds.find(x => x._id === id);
+  const e = _currentEditEntry || allSenderIds.find(x => x._id === id);
   if (!e) return;
   const paysIdStr = e.pays_id?.$oid || e.pays_id?.toString() || e.pays_id;
   const ops = allOperateurs.filter(op => {
@@ -2715,8 +2721,8 @@ function initEditOps() {
 
 async function saveEdit() {
   const id = document.getElementById('edit-id').value;
-  const e = allSenderIds.find(x => x._id === id);
-  if (!e) return;
+  const e = _currentEditEntry || allSenderIds.find(x => x._id === id);
+  if (!e) { showToast('Erreur : entrée introuvable, fermez et rouvrez la fiche.', 'error'); return; }
   const btn = document.getElementById('edit-save-btn');
   btn.disabled = true; btn.textContent = 'Enregistrement...';
 
