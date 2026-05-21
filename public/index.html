@@ -745,12 +745,23 @@ tr:hover td{background:#F1F5F9}
       <input type="hidden" id="edit-id"/>
       
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="field">
-          <label>Nom du client</label>
+        <div class="field" style="grid-column:1/-1">
+          <label>Demandeur</label>
+          <div style="display:flex;gap:6px;margin-bottom:8px">
+            <button type="button" id="edit-btn-direct" onclick="onEditClientType('direct')"
+              style="padding:4px 14px;font-size:12px;font-weight:600;border:1.5px solid var(--blue4);border-radius:6px;background:var(--blue4);color:#fff;cursor:pointer;font-family:var(--font)">Direct</button>
+            <button type="button" id="edit-btn-agr" onclick="onEditClientType('agr')"
+              style="padding:4px 14px;font-size:12px;font-weight:600;border:1.5px solid var(--border2);border-radius:6px;background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font)">Via agrégateur</button>
+          </div>
           <input type="text" id="edit-client" placeholder="Nom du client"/>
-          <input type="text" id="edit-client-final" placeholder="Client final (si agrégateur) — optionnel" style="margin-top:5px;font-size:12px;color:var(--purple);font-style:italic"/>
+          <div id="edit-agr-client-wrap" style="display:none;flex-direction:column;gap:6px;margin-top:2px">
+            <select id="edit-client-agr" style="padding:7px 10px;font-size:13px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--font)">
+              <option value="">— Choisir un agrégateur —</option>
+            </select>
+            <input type="text" id="edit-client-final" placeholder="Client final (optionnel) — ex: Wave Mobile Money" style="font-size:12px;color:var(--purple);font-style:italic"/>
+          </div>
         </div>
-        <div class="field"><label>Sender ID</label><input type="text" id="edit-sid" placeholder="Ex: WAVEMONEY" maxlength="11"/></div>
+        <div class="field"><label>Sender ID</label><input type="text" id="edit-sid" placeholder="Ex: WAVEMONEY" maxlength="11" onblur="checkEditSidDuplicate()"/><div id="edit-sid-dup" style="display:none;font-size:11px;color:var(--red);margin-top:4px;padding:4px 8px;background:var(--red50);border-radius:5px;border:1px solid #FCA5A5"></div></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
         <div class="field"><label>Date de demande</label><input type="date" id="edit-ddem"/></div>
@@ -1189,8 +1200,9 @@ function addSenderBlock() {
   block.innerHTML = '<div style="display:flex;align-items:center;gap:10px;margin-bottom:' + mbVal + '">'
     + '<div class="field" style="flex:1;margin:0">'
     + '<label style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Sender ID ' + idx + ' *</label>'
-    + '<input type="text" id="sid-' + idx + '" placeholder="Ex: WAVEMONEY" maxlength="11" oninput="validateSidInput(this)" style="width:100%;padding:7px 10px;font-size:14px;font-weight:600;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--mono)"/>'
+    + '<input type="text" id="sid-' + idx + '" placeholder="Ex: WAVEMONEY" maxlength="11" oninput="validateSidInput(this)" onblur="checkSidDuplicate(this)" style="width:100%;padding:7px 10px;font-size:14px;font-weight:600;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--mono)"/>'
     + '<div id="sid-hint-' + idx + '" style="font-size:11px;color:var(--text3);margin-top:4px">0 / 11 caractères</div>'
+    + '<div id="sid-dup-' + idx + '" style="display:none;font-size:11px;color:var(--red);margin-top:4px;padding:4px 8px;background:var(--red50);border-radius:5px;border:1px solid #FCA5A5"></div>'
     + '</div>'
     + deleteBtn
     + '</div>'
@@ -1255,7 +1267,79 @@ function validateSidInput(input) {
   }
 }
 
+async function checkSidDuplicate(input) {
+  const idx = input.id.replace('sid-', '');
+  const dupDiv = document.getElementById('sid-dup-' + idx);
+  if (!dupDiv) return;
+  const sid = input.value.trim();
+  const pays_id = document.getElementById('f-pays')?.value;
+  if (!sid || !pays_id) { dupDiv.style.display = 'none'; return; }
+  try {
+    const token = localStorage.getItem('sid_token');
+    const r = await fetch(`/api/sender-ids/check?sender_id=${encodeURIComponent(sid)}&pays_id=${encodeURIComponent(pays_id)}`, {
+      headers: token ? { Authorization: 'Bearer ' + token } : {}
+    });
+    if (!r.ok) return;
+    const data = await r.json();
+    if (data.exists) {
+      dupDiv.textContent = `⚠ Ce Sender ID existe déjà pour ce pays (client : ${data.entry.nom_client || '—'})`;
+      dupDiv.style.display = '';
+    } else {
+      dupDiv.style.display = 'none';
+    }
+  } catch { dupDiv.style.display = 'none'; }
+}
+
+async function checkEditSidDuplicate() {
+  const dupDiv = document.getElementById('edit-sid-dup');
+  if (!dupDiv) return;
+  const sid = document.getElementById('edit-sid')?.value.trim();
+  const editId = document.getElementById('edit-id')?.value;
+  const entry = allSenderIds.find(x => x._id === editId);
+  const pays_id = entry ? (entry.pays_id?.$oid || entry.pays_id?.toString() || entry.pays_id) : null;
+  if (!sid || !pays_id) { dupDiv.style.display = 'none'; return; }
+  try {
+    const token = localStorage.getItem('sid_token');
+    const r = await fetch(`/api/sender-ids/check?sender_id=${encodeURIComponent(sid)}&pays_id=${encodeURIComponent(pays_id)}&exclude_id=${encodeURIComponent(editId)}`, {
+      headers: token ? { Authorization: 'Bearer ' + token } : {}
+    });
+    if (!r.ok) return;
+    const data = await r.json();
+    if (data.exists) {
+      dupDiv.textContent = `⚠ Ce Sender ID existe déjà pour ce pays (client : ${data.entry.nom_client || '—'})`;
+      dupDiv.style.display = '';
+    } else {
+      dupDiv.style.display = 'none';
+    }
+  } catch { dupDiv.style.display = 'none'; }
+}
+
 let _clientType = 'direct';
+let _editClientType = 'direct';
+
+function onEditClientType(type) {
+  _editClientType = type;
+  const isDirect = type === 'direct';
+  document.getElementById('edit-client').style.display = isDirect ? '' : 'none';
+  const wrap = document.getElementById('edit-agr-client-wrap');
+  wrap.style.display = isDirect ? 'none' : 'flex';
+  if (!isDirect) {
+    const sel = document.getElementById('edit-client-agr');
+    sel.innerHTML = '<option value="">— Choisir un agrégateur —</option>' +
+      allAgregateurs.map(a => {
+        const aid = a._id?.$oid||a._id?.toString()||a._id;
+        return `<option value="${aid}" data-nom="${a.nom}">${a.nom}</option>`;
+      }).join('');
+  }
+  const btnD = document.getElementById('edit-btn-direct');
+  const btnA = document.getElementById('edit-btn-agr');
+  btnD.style.background  = isDirect ? 'var(--blue4)' : 'transparent';
+  btnD.style.color       = isDirect ? '#fff' : 'var(--text2)';
+  btnD.style.borderColor = isDirect ? 'var(--blue4)' : 'var(--border2)';
+  btnA.style.background  = !isDirect ? 'var(--blue4)' : 'transparent';
+  btnA.style.color       = !isDirect ? '#fff' : 'var(--text2)';
+  btnA.style.borderColor = !isDirect ? 'var(--blue4)' : 'var(--border2)';
+}
 
 function onClientTypeChange(type) {
   _clientType = type;
@@ -1343,7 +1427,7 @@ async function saveEntry() {
   let hasError = false;
   blocks.forEach(block => {
     const idx = block.id.replace('sid-block-', '');
-    const sid = document.getElementById('sid-' + idx)?.value.trim().toUpperCase();
+    const sid = document.getElementById('sid-' + idx)?.value.trim();
     if (!sid) { hasError = true; return; }
     const opRows = block.querySelectorAll('.op-row');
     const operateurs = [...opRows].map((r, i) => {
@@ -1752,7 +1836,7 @@ function renderList() {
           <div style="margin-top:6px;display:inline-flex;align-items:center;padding:2px 9px;background:var(--blue50);border:1.5px solid var(--blueb);border-radius:20px;font-size:10px;font-weight:700;color:var(--blue)">
             ${total} Sender${total > 1 ? ' IDs' : ' ID'}
           </div>
-          ${window.__viewerMode ? '' : `<div style="margin-top:8px"><button onclick="addSenderForClient(${JSON.stringify(e.nom_client).replace(/"/g,'&quot;')},'${cPaysId}')" style="padding:3px 9px;font-size:10px;font-weight:600;border:1.5px solid var(--blue4);border-radius:5px;background:transparent;color:var(--blue);cursor:pointer;font-family:var(--font)">+ Sender ID</button></div>`}
+          ${window.__viewerMode ? '' : `<div style="margin-top:12px;text-align:right"><button onclick="addSenderForClient(${JSON.stringify(e.nom_client).replace(/"/g,'&quot;')},'${cPaysId}')" style="padding:4px 10px;font-size:10px;font-weight:600;border:1.5px solid var(--blue4);border-radius:5px;background:transparent;color:var(--blue);cursor:pointer;font-family:var(--font)">+ Sender ID</button></div>`}
         </td>`;
       }
 
@@ -2458,9 +2542,24 @@ function openEdit(id) {
   if (!e) return;
   document.getElementById('edit-id').value = id;
   document.getElementById('edit-subtitle').textContent = e.nom_client + ' — ' + e.sender_id;
-  document.getElementById('edit-client').value = e.nom_client || '';
-  document.getElementById('edit-client-final').value = e.client_final || '';
+  // Detect Direct vs Via agrégateur
+  const _eAgrId = e.agregateur_id?.$oid || e.agregateur_id?.toString() || e.agregateur_id;
+  const _eAgrObj = _eAgrId ? allAgregateurs.find(a => (a._id?.$oid||a._id?.toString()||a._id) === _eAgrId) : null;
+  const _eIsViaAgr = _eAgrObj && e.nom_client === _eAgrObj.nom;
+  onEditClientType(_eIsViaAgr ? 'agr' : 'direct');
+  if (_eIsViaAgr) {
+    // pre-select the aggregator
+    setTimeout(() => {
+      const sel = document.getElementById('edit-client-agr');
+      if (sel) sel.value = _eAgrId;
+    }, 0);
+    document.getElementById('edit-client-final').value = e.client_final || '';
+  } else {
+    document.getElementById('edit-client').value = e.nom_client || '';
+    document.getElementById('edit-client-final').value = e.client_final || '';
+  }
   document.getElementById('edit-sid').value = e.sender_id || '';
+  document.getElementById('edit-sid-dup').style.display = 'none';
   document.getElementById('edit-ticket').value = e.numero_ticket || '';
   document.getElementById('edit-url').value = e.url_ticket || '';
   document.getElementById('edit-comm').value = e.commentaires || '';
@@ -2638,22 +2737,29 @@ async function saveEdit() {
     await api(`/api/sender-ids/${id}`, {
       method: 'PUT',
       body: JSON.stringify({
-        nom_client:      document.getElementById('edit-client').value.trim(),
+        nom_client:      _editClientType === 'agr'
+                           ? (document.getElementById('edit-client-agr')?.selectedOptions[0]?.dataset.nom || '')
+                           : document.getElementById('edit-client').value.trim(),
         client_final:    document.getElementById('edit-client-final').value.trim() || null,
+        agregateur_id:   _editClientType === 'agr'
+                           ? document.getElementById('edit-client-agr')?.value || null
+                           : null,
         sender_id:       document.getElementById('edit-sid').value.trim(),
         numero_ticket:   document.getElementById('edit-ticket').value.trim(),
         url_ticket:      document.getElementById('edit-url').value.trim(),
         commentaires:    document.getElementById('edit-comm').value.trim(),
         date_demande:    document.getElementById('edit-ddem').value || null,
         date_soumission: document.getElementById('edit-dsub').value || null,
-        agregateur_id:   document.getElementById('edit-agregateur')?.value || null,
         operateurs
       })
     });
     // Update local data
     Object.assign(e, {
-      nom_client:      document.getElementById('edit-client').value.trim(),
+      nom_client:      _editClientType === 'agr'
+                         ? (document.getElementById('edit-client-agr')?.selectedOptions[0]?.dataset.nom || '')
+                         : document.getElementById('edit-client').value.trim(),
       client_final:    document.getElementById('edit-client-final').value.trim() || null,
+      agregateur_id:   _editClientType === 'agr' ? document.getElementById('edit-client-agr')?.value || null : null,
       sender_id:       document.getElementById('edit-sid').value.trim(),
       numero_ticket:   document.getElementById('edit-ticket').value.trim(),
       url_ticket:      document.getElementById('edit-url').value.trim(),

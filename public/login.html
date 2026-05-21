@@ -211,6 +211,23 @@ body {
       <input type="password" id="inp-pwd" placeholder="••••••••" autocomplete="current-password"/>
     </div>
     <button class="btn btn-primary" id="btn-login" onclick="submitLogin()">Continuer →</button>
+    <div style="text-align:center;margin-top:14px">
+      <button type="button" onclick="showForgot()" style="background:none;border:none;color:var(--blue4);font-size:12px;cursor:pointer;font-family:var(--font);text-decoration:underline;padding:0">Mot de passe oublié ?</button>
+    </div>
+  </div>
+
+  <!-- STEP 3 — Forgot password -->
+  <div class="step" id="step3">
+    <div style="font-size:14px;font-weight:600;margin-bottom:6px">Réinitialiser le mot de passe</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.5">Entrez votre adresse email. Vous recevrez un lien pour définir un nouveau mot de passe.</div>
+    <div id="err3" class="error"></div>
+    <div id="ok3" style="display:none;padding:10px 13px;background:var(--green50);border:1.5px solid var(--greena);border-radius:var(--r);font-size:13px;color:var(--green);margin-bottom:14px"></div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="inp-forgot-email" placeholder="votre@email.com" autocomplete="email"/>
+    </div>
+    <button class="btn btn-primary" id="btn-forgot" onclick="submitForgot()">Envoyer le lien →</button>
+    <button class="btn btn-ghost" onclick="goBack()">← Retour</button>
   </div>
 
   <!-- STEP 2 — OTP -->
@@ -288,9 +305,34 @@ async function submitOTP() {
 
 function goBack() {
   clearInterval(timerInterval);
-  document.getElementById('step2').classList.remove('active');
+  ['step2','step3'].forEach(s => document.getElementById(s).classList.remove('active'));
   document.getElementById('step1').classList.add('active');
   hideErr(1); hideErr(2);
+}
+
+function showForgot() {
+  document.getElementById('step1').classList.remove('active');
+  document.getElementById('step3').classList.add('active');
+  document.getElementById('err3').style.display = 'none';
+  document.getElementById('ok3').style.display = 'none';
+  document.getElementById('inp-forgot-email').value = document.getElementById('inp-email').value || '';
+}
+
+async function submitForgot() {
+  document.getElementById('err3').style.display = 'none';
+  document.getElementById('ok3').style.display = 'none';
+  const email = document.getElementById('inp-forgot-email').value.trim();
+  if (!email) { document.getElementById('err3').textContent = 'Veuillez entrer votre email.'; document.getElementById('err3').style.display = 'block'; return; }
+  const btn = document.getElementById('btn-forgot');
+  btn.disabled = true; btn.textContent = 'Envoi...';
+  try {
+    const r = await fetch('/api/auth/forgot-password', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email}) });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error);
+    document.getElementById('ok3').textContent = 'Si cet email existe, un lien de réinitialisation a été envoyé.';
+    document.getElementById('ok3').style.display = 'block';
+  } catch(e) { document.getElementById('err3').textContent = e.message; document.getElementById('err3').style.display = 'block'; }
+  finally { btn.disabled = false; btn.textContent = 'Envoyer le lien →'; }
 }
 
 function startTimer(seconds) {

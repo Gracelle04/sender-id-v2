@@ -59,7 +59,8 @@ async function sendMail(to, subject, html) {
     console.log(`\n📧 [EMAIL SIMULÉ] À: ${to}\n   Sujet: ${subject}\n   ${html.replace(/<[^>]+>/g,'').trim().slice(0,200)}\n`);
     return;
   }
-  await transporter.sendMail({ from: `"Suivi Sender ID" <${process.env.SMTP_USER}>`, to, subject, html });
+  const fromAddr = process.env.SMTP_FROM || process.env.SMTP_USER;
+  await transporter.sendMail({ from: `"Suivi Sender ID" <${fromAddr}>`, to, subject, html });
 }
 
 function emailStyle() {
@@ -118,6 +119,8 @@ async function connectDB() {
   await db.collection('otps').createIndex({ expires_at: 1 }, { expireAfterSeconds: 0 });
   await db.collection('invitations').createIndex({ expires_at: 1 }, { expireAfterSeconds: 0 });
   await db.collection('invitations').createIndex({ token: 1 }, { unique: true });
+  await db.collection('password_resets').createIndex({ expires_at: 1 }, { expireAfterSeconds: 0 });
+  await db.collection('password_resets').createIndex({ token: 1 }, { unique: true });
   await db.collection('activity_logs').createIndex({ timestamp: -1 });
   await db.collection('activity_logs').createIndex({ user_email: 1 });
   await db.collection('agregateurs').createIndex({ nom: 1 });
@@ -250,6 +253,68 @@ app.post('/api/auth/activate', async (req, res) => {
       { $set: { password: hash, actif: true } }
     );
     await db.collection('invitations').deleteOne({ token });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─── MOT DE PASSE OUBLIÉ ─────────────────────────────────────────────────────
+
+app.post('/api/auth/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email requis' });
+    const emailLower = email.toLowerCase().trim();
+    const user = await db.collection('users').findOne({ email: emailLower, actif: true });
+    // Toujours répondre OK pour ne pas révéler si l'email existe
+    if (user) {
+      const token = crypto.randomBytes(32).toString('hex');
+      await db.collection('password_resets').deleteMany({ email: emailLower });
+      await db.collection('password_resets').insertOne({
+        email: emailLower, token,
+        expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000), // 2h
+        created_at: new Date()
+      });
+      const link = `${APP_URL}/reset-password.html?token=${token}`;
+      const html = `<div style="${emailStyle()}">
+        <div style="background:#0C447C;padding:28px 32px">
+          <div style="color:#fff;font-size:20px;font-weight:700">Suivi Sender ID</div>
+          <div style="color:#85B7EB;font-size:13px;margin-top:4px">Afrique Ouest &amp; Centrale</div>
+        </div>
+        <div style="padding:32px">
+          <p style="color:#1C1C1A;font-size:15px;font-weight:600;margin-bottom:8px">Bonjour ${user.nom || ''} 👋</p>
+          <p style="color:#6B6963;font-size:14px;margin-bottom:28px">Vous avez demandé la réinitialisation de votre mot de passe. Cliquez sur le bouton ci-dessous. Ce lien est valable <strong>2 heures</strong>.</p>
+          <div style="text-align:center;margin-bottom:28px">
+            <a href="${link}" style="display:inline-block;background:#0C447C;color:#fff;font-size:15px;font-weight:600;padding:14px 32px;border-radius:8px;text-decoration:none">Réinitialiser mon mot de passe →</a>
+          </div>
+          <p style="color:#9C9890;font-size:12px;text-align:center">Ou copiez ce lien : <a href="${link}" style="color:#378ADD">${link}</a></p>
+          <p style="color:#9C9890;font-size:12px;text-align:center;margin-top:12px">Si vous n'avez pas fait cette demande, ignorez cet email.</p>
+        </div>
+      </div>`;
+      await sendMail(emailLower, 'Réinitialisation de mot de passe — Suivi Sender ID', html);
+    }
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Valider le token de réinitialisation
+app.get('/api/auth/reset-password/:token', async (req, res) => {
+  try {
+    const rec = await db.collection('password_resets').findOne({ token: req.params.token });
+    if (!rec || new Date() > rec.expires_at) return res.status(404).json({ error: 'Lien invalide ou expiré' });
+    res.json({ success: true, email: rec.email });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Appliquer le nouveau mot de passe
+app.post('/api/auth/reset-password', async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    if (!password || password.length < 8) return res.status(400).json({ error: 'Minimum 8 caractères' });
+    const rec = await db.collection('password_resets').findOne({ token });
+    if (!rec || new Date() > rec.expires_at) return res.status(404).json({ error: 'Lien invalide ou expiré' });
+    const hash = await bcrypt.hash(password, 10);
+    await db.collection('users').updateOne({ email: rec.email }, { $set: { password: hash } });
+    await db.collection('password_resets').deleteOne({ token });
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -446,6 +511,23 @@ app.delete('/api/agregateurs/:id', adminRequired, async (req, res) => {
 });
 
 // ─── SENDER IDS ───────────────────────────────────────────────────────────────
+
+// Vérifier doublon : même sender_id sur même pays
+app.get('/api/sender-ids/check', async (req, res) => {
+  try {
+    const { sender_id, pays_id, exclude_id } = req.query;
+    if (!sender_id || !pays_id) return res.status(400).json({ error: 'sender_id et pays_id requis' });
+    const query = {
+      sender_id: { $regex: `^${sender_id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' },
+      pays_id: new ObjectId(pays_id)
+    };
+    if (exclude_id) query._id = { $ne: new ObjectId(exclude_id) };
+    const existing = await db.collection('sender_ids').findOne(query, {
+      projection: { sender_id: 1, nom_client: 1, pays_id: 1 }
+    });
+    res.json({ exists: !!existing, entry: existing || null });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
 
 app.get('/api/sender-ids', async (req, res) => {
   try {
